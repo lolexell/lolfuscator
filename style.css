@@ -1,0 +1,20 @@
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#05030a;color:#f6f3ff}
+.wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:16px}
+.card{width:100%;max-width:900px;background:radial-gradient(circle at top,#281a5f 0,#070310 55%,#020109 100%);border-radius:14px;border:1px solid rgba(255,255,255,.06);box-shadow:0 0 40px rgba(0,0,0,.7);padding:20px 22px 18px}
+.logo{font-size:26px;font-weight:700;letter-spacing:.05em;margin-bottom:14px}
+.logo span{color:#9f7bff}
+.section{margin-top:14px}
+.section h2{font-size:14px;font-weight:600;opacity:.85;margin-bottom:4px;text-transform:uppercase;letter-spacing:.12em}
+textarea{width:100%;min-height:150px;background:rgba(5,3,20,.9);border-radius:8px;border:1px solid rgba(255,255,255,.08);color:#f6f3ff;font-family:SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-size:13px;resize:vertical;padding:10px 11px;outline:none}
+textarea:focus{border-color:#a48bff;box-shadow:0 0 0 1px rgba(164,139,255,.4)}
+.controls{display:flex;align-items:center;gap:10px;margin-top:12px}
+button{border:none;border-radius:999px;padding:8px 18px;background:linear-gradient(135deg,#9f7bff,#ff6ad5);color:#05030a;font-weight:600;font-size:14px;cursor:pointer;transition:transform .08s ease,box-shadow .08s ease,filter .12s ease}
+button:hover{transform:translateY(-1px);box-shadow:0 7px 18px rgba(0,0,0,.7);filter:brightness(1.06)}
+button:active{transform:translateY(0);box-shadow:none;filter:brightness(.97)}
+.small{font-size:12px;opacity:.85;display:flex;align-items:center;gap:4px}
+.foot{margin-top:10px;font-size:11px;opacity:.6;text-align:right}
+@media(max-width:600px){
+  .card{padding:16px 14px}
+  .logo{font-size:22px}
+}
