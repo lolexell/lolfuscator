@@ -21,7 +21,7 @@
   function H(src){
     var p = S(src);
     var head = C.checked
-      ? "--// lua hub obf\n"
+      ? "--// lolfuscator.meow v1.0 || lolfuscator.net \n"
       : "";
     var stub =
 "local o=(\""+p+"\")local _=string.char;local x={}local r=1;" +
