@@ -1,51 +1,47 @@
-(function(U){
-  var z = document,
-      Q = function(q){return z.getElementById(q)},
-      X = Q("in"),
-      Y = Q("out"),
-      B = Q("btn"),
-      C = Q("cmt");
+(function(){
+  var d = document,
+      $ = function(id){ return d.getElementById(id); },
+      input  = $("in"),
+      output = $("out"),
+      btn    = $("btn"),
+      cmt    = $("cmt");
 
-  function J(n){return ("00"+n.toString(16)).slice(-2)}
-  function S(s){
-    var o=[],i=0,c,t;
-    for(;i<s.length;i++){
-      c=s.charCodeAt(i) ^ (13 + (i*7)%211);
-      t = (i%2? "~":"!");
-      o.push("\\" + J(c));
-      if(i%11===0) o.push(t);
+  function hex(n){ return ("00"+n.toString(16)).slice(-2); }
+
+  function encode(src){
+    var out = [], i = 0, c, marker;
+    for(; i < src.length; i++){
+      c = src.charCodeAt(i) ^ (13 + (i * 7) % 211);
+      marker = (i % 2 ? "~" : "!");
+      out.push("\\" + hex(c));
+      if(i % 11 === 0) out.push(marker);
     }
-    return o.join("");
+    return out.join("");
   }
 
-  function H(src){
-    var p = S(src);
-    var head = C.checked
-      ? "--// lolfuscator.meow v1.0 || lolfuscator.net \n"
+  function buildObfuscated(src){
+    var payload = encode(src);
+    var header = cmt.checked
+      ? "--// lolfuscator.meow 1.0 || lolfuscator.net\n"
       : "";
     var stub =
-"local o=(\""+p+"\")local _=string.char;local x={}local r=1;" +
-"for i=1,#o do local c=o:byte(i);if c==126 or c==33 then else" +
-" local v=c ~ (13+((r-1)*7)%211);x[r]=_(v);r=r+1 end end " +
-"local f=table.concat(x) loadstring(f)()";
-    return head+stub;
+"local o=(\""+payload+"\") local _=string.char local x={} local r=1 " +
+"for i=1,#o do local c=o:byte(i) if c==126 or c==33 then " +
+"else local v=c ~ (13+((r-1)*7)%211) x[r]=_(v) r=r+1 end end " +
+"local f=table.concat(x) local l=loadstring or load if l then l(f)() end";
+    return header .. stub;
   }
 
-  var W = "onkeyup onclick".split(" ");
-  for(var i=0;i<W.length;i++){
-    X[W[i]] = function(){};
-  }
-
-  B.onclick = function(){
-    var v = X.value||"";
+  btn.onclick = function(){
+    var v = input.value || "";
     if(!v.trim()){
-      Y.value = "-- nothing to obfuscate";
+      output.value = "-- nothing to obfuscate";
       return;
     }
     try{
-      Y.value = H(v);
+      output.value = buildObfuscated(v);
     }catch(e){
-      Y.value = "-- obfuscation error: "..e;
+      output.value = "-- obfuscation error: " + (e && e.message || e);
     }
   };
 })();
