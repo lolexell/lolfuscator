@@ -11,9 +11,9 @@
   --fg:#f8f5ff;
   --accent:#ff6ad5;
   --accent2:#8a7bff;
-  --border:rgba(255,255,255,.14);
+  --border:rgba(255,255,255,.16);
   --muted:rgba(240,235,255,.72);
-  --code-bg:#060316;
+  --code-bg:#050215;
   --shadow:0 0 32px rgba(0,0,0,.75);
 }
 
@@ -41,9 +41,9 @@ body{
   inset:-40%;
   background:
     radial-gradient(circle at 10% 0%,rgba(124,69,255,.45),transparent 55%),
-    radial-gradient(circle at 90% 100%,rgba(255,79,165,.5),transparent 55%);
-  filter:blur(10px);
-  opacity:.75;
+    radial-gradient(circle at 90% 100%,rgba(255,79,165,.55),transparent 55%);
+  filter:blur(12px);
+  opacity:.8;
 }
 
 .bg-grid{
@@ -78,7 +78,7 @@ body{
   font-weight:700;
   letter-spacing:.12em;
   text-transform:uppercase;
-  font-size:18px;
+  font-size:19px;
 }
 
 .brand-main{color:#fff;}
@@ -89,13 +89,13 @@ body{
   color:var(--muted);
 }
 
-/* main panel */
+/* panel */
 
 .panel{
   margin-top:8px;
   border-radius:18px;
   border:1px solid var(--border);
-  background:linear-gradient(135deg,rgba(9,4,30,.95),rgba(5,2,18,.98));
+  background:linear-gradient(135deg,rgba(9,4,30,.96),rgba(5,2,18,.99));
   box-shadow:var(--shadow);
   overflow:hidden;
 }
@@ -106,8 +106,8 @@ body{
   align-items:center;
   gap:8px;
   padding:0 12px;
-  border-bottom:1px solid rgba(255,255,255,.1);
-  background:linear-gradient(90deg,rgba(255,255,255,.05),transparent);
+  border-bottom:1px solid rgba(255,255,255,.12);
+  background:linear-gradient(90deg,rgba(255,255,255,.06),transparent);
 }
 
 .pill{
@@ -133,7 +133,7 @@ body{
   border-radius:999px;
   border:1px solid rgba(144,238,144,.6);
   color:#c8ffd0;
-  background:rgba(0,0,0,.4);
+  background:rgba(0,0,0,.45);
   text-transform:uppercase;
   letter-spacing:.16em;
 }
@@ -172,14 +172,12 @@ body{
   color:rgba(240,235,255,.55);
 }
 
-/* textareas */
-
 textarea{
   width:100%;
   min-height:200px;
   padding:10px 11px;
   border-radius:10px;
-  border:1px solid rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.12);
   background:var(--code-bg);
   color:var(--fg);
   font-family:SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
@@ -244,8 +242,14 @@ button:active{
 .note{
   font-size:10px;
   color:rgba(240,235,255,.6);
-  max-width:190px;
+  max-width:200px;
   text-align:center;
+}
+
+.status{
+  margin-top:4px;
+  font-size:10px;
+  color:rgba(240,235,255,.6);
 }
 
 /* footer */
