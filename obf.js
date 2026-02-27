@@ -12,23 +12,29 @@
     if(statusNode) statusNode.textContent = t;
   }
 
-  // \xxx формат безопасен для Lua-строки и не ломает JS
+  // На случай, если где‑то id не совпал, сразу увидишь в консоли
+  console.log("init lolfuscator", {input, output, btn, cmt, statusNode});
+
+  if (!btn || !input || !output) {
+    console.error("Required elements not found. Check ids in HTML.");
+    return;
+  }
+
   function toLuaEscapedBytes(src){
     var out = [];
-    for(var i=0;i<src.length;i++){
+    for (var i = 0; i < src.length; i++) {
       var c = src.charCodeAt(i);
-      out.push("\\" + c.toString(10)); // десятичный \123
+      out.push("\\" + c.toString(10));
     }
     return out.join("");
   }
 
   function buildLua(src){
     var payload = toLuaEscapedBytes(src);
-    var header = cmt && cmt.checked
+    var header = (cmt && cmt.checked)
       ? "--// lolfuscator.meow 1.0 || lolfuscator.net\n"
       : "";
 
-    // никаких дополнительных loadstring([[...]]) сверху
     var lua =
       header +
       "local o = \"" + payload + "\"\n" +
@@ -50,16 +56,17 @@
 
   btn.onclick = function(){
     var v = input.value || "";
-    if(!v.trim()){
+    if (!v.trim()) {
       output.value = "-- nothing to obfuscate";
       setStatus("idle: empty input");
       return;
     }
-    try{
+    try {
       var res = buildLua(v);
       output.value = res;
       setStatus("ok: obfuscated");
-    }catch(e){
+    } catch (e) {
+      console.error(e);
       output.value = "-- obfuscation error: " + (e && e.message || e);
       setStatus("error");
     }
