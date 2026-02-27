@@ -1,409 +1,70 @@
-<!DOCTYPE html>
-<html lang="ru">
+<!doctype html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern Obfuscator - LOLfuscator Base64</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
-            color: #e0e0e0;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 40px;
-            position: relative;
-        }
-
-        .logo {
-            font-size: 3rem;
-            font-weight: 800;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 0 30px rgba(255, 107, 107, 0.5);
-            animation: glow 2s ease-in-out infinite alternate;
-        }
-
-        @keyframes glow {
-            from { filter: drop-shadow(0 0 20px #ff6b6b); }
-            to { filter: drop-shadow(0 0 30px #4ecdc4); }
-        }
-
-        .subtitle {
-            font-size: 1.2rem;
-            color: #a0a0a0;
-            margin-top: 10px;
-        }
-
-        .editor-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .editor {
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 20px;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .editor::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            transition: left 0.5s;
-        }
-
-        .editor:hover::before {
-            left: 100%;
-        }
-
-        .editor:hover {
-            border-color: #4ecdc4;
-            box-shadow: 0 20px 40px rgba(78, 205, 196, 0.2);
-        }
-
-        .editor-label {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: #4ecdc4;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        textarea {
-            width: 100%;
-            height: 400px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            padding: 15px;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            color: #e0e0e0;
-            resize: vertical;
-            outline: none;
-            transition: border-color 0.3s ease;
-        }
-
-        textarea:focus {
-            border-color: #4ecdc4;
-            box-shadow: 0 0 20px rgba(78, 205, 196, 0.3);
-        }
-
-        .controls {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 30px;
-        }
-
-        .btn {
-            padding: 12px 30px;
-            border: none;
-            border-radius: 50px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-primary {
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-            color: white;
-            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(78, 205, 196, 0.6);
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: #e0e0e0;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: #4ecdc4;
-        }
-
-        .stats {
-            display: flex;
-            justify-content: space-around;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .stat {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: #4ecdc4;
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            color: #a0a0a0;
-            margin-top: 5px;
-        }
-
-        .copy-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.5);
-            color: #4ecdc4;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            font-size: 1.2rem;
-            transition: all 0.3s ease;
-        }
-
-        .copy-btn:hover {
-            background: #4ecdc4;
-            color: #0f0f23;
-            transform: scale(1.1);
-        }
-
-        .particles {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        @media (max-width: 768px) {
-            .editor-container {
-                grid-template-columns: 1fr;
-            }
-            .logo {
-                font-size: 2rem;
-            }
-        }
-    </style>
+  <meta charset="utf-8">
+  <title>lolfuscator.meow</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="particles" id="particles"></div>
-    
-    <div class="container">
-        <header>
-            <h1 class="logo">LOLfuscator</h1>
-            <p class="subtitle">Модерн обфускатор скриптов • Base64 + Защита</p>
-        </header>
+<div class="bg">
+  <div class="bg-gradient"></div>
+  <div class="bg-grid"></div>
+</div>
 
-        <div class="stats">
-            <div class="stat">
-                <div class="stat-value" id="inputSize">0</div>
-                <div class="stat-label">Исходный размер</div>
-            </div>
-            <div class="stat">
-                <div class="stat-value" id="outputSize">0</div>
-                <div class="stat-label">Обфусцированный</div>
-            </div>
-            <div class="stat">
-                <div class="stat-value" id="compression">0%</div>
-                <div class="stat-label">Сжатие</div>
-            </div>
-        </div>
+<main class="shell">
+  <header class="top">
+    <div class="brand">
+      <span class="brand-main">lolfuscator</span><span class="brand-dot">.meow</span>
+    </div>
+    <div class="subtitle">simple Lua loadstring obfuscator</div>
+  </header>
 
-        <div class="editor-container">
-            <div class="editor">
-                <div class="editor-label">📝 Исходный скрипт</div>
-                <textarea id="inputScript" placeholder="-- Вставьте свой Lua скрипт для Roblox&#10;loadstring(game:HttpGet('https://example.com/script.lua'))()&#10;-- Обфусцируется в Base64 + защита">loadstring(game:HttpGet("https://raw.githubusercontent.com/yourscript/main.lua"))()</textarea>
-            </div>
-            <div class="editor">
-                <div class="editor-label">🔒 Обфусцированный код</div>
-                <button class="copy-btn" onclick="copyOutput()">📋</button>
-                <textarea id="outputScript" readonly placeholder="Результат обфускации появится здесь..."></textarea>
-            </div>
-        </div>
-
-        <div class="controls">
-            <button class="btn btn-primary" onclick="obfuscate()">🚀 Обфусцировать</button>
-            <button class="btn btn-secondary" onclick="clearAll()">🗑️ Очистить</button>
-            <button class="btn btn-secondary" onclick="loadExample()">💡 Пример</button>
-            <button class="btn btn-secondary" onclick="downloadOutput()">⬇️ Скачать</button>
-        </div>
-
-        <div style="text-align: center; color: #a0a0a0; font-size: 0.9rem;">
-            <p>Совместимо с Synapse X, KRNL, JJSPloit • Стиль lolfuscator.meow</p>
-        </div>
+  <section class="panel">
+    <div class="panel-header">
+      <span class="pill pill-green"></span>
+      <span class="pill pill-yellow"></span>
+      <span class="pill pill-red"></span>
+      <span class="panel-title">script.lua</span>
+      <span class="panel-badge">online</span>
     </div>
 
-    <script>
-        // Создание частиц для фона
-        function createParticles() {
-            const particles = document.getElementById('particles');
-            for (let i = 0; i < 50; i++) {
-                const particle = document.createElement('div');
-                particle.style.cssText = `
-                    position: absolute;
-                    width: 4px;
-                    height: 4px;
-                    background: rgba(78, 205, 196, 0.5);
-                    border-radius: 50%;
-                    left: ${Math.random() * 100}%;
-                    top: ${Math.random() * 100}%;
-                    animation: float ${2 + Math.random() * 3}s infinite linear;
-                    animation-delay: ${Math.random() * 2}s;
-                `;
-                particles.appendChild(particle);
-            }
-        }
+    <div class="panel-body">
+      <div class="col">
+        <div class="label-row">
+          <span class="label">Input</span>
+          <span class="hint">paste your Lua script</span>
+        </div>
+        <textarea id="in" spellcheck="false" placeholder="print(&quot;hello, lolfuscator.meow&quot;)"></textarea>
+      </div>
 
-        // Обфускатор в стиле lolfuscator.meow (Base64 + junk + защита)
-        function obfuscateScript(script) {
-            // Шаг 1: Base64 кодирование
-            let encoded = btoa(script);
-            
-            // Шаг 2: Добавление junk-кода и защиты
-            const junk = [
-                "local a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z=math.random(1,999)",
-                "local _0x1,_0x2,_0x3,_0x4,_0x5=game:GetService('HttpService'):GenerateGUID(false)",
-                "if getfenv then setfenv(1,getfenv()) end",
-                "local anti = {debug.getinfo,debug.getupvalue,debug.getlocal,debug.getregistry}",
-                "for i=1,#anti do anti[i]=nil end"
-            ];
-            
-            const obfuscated = `
-local s = game:GetService('HttpService')
-local b = '${encoded}'
-local d = s:DecodeDatasize(b)
-local f = loadstring(s:JSONDecode(game:HttpGet('https://raw.githubusercontent.com/lolfuscator/meow/main/dummy.json'))() or '')()
-${junk[Math.floor(Math.random()*junk.length)]}
-loadstring(s:JSONDecode(game:HttpGet('data:text/plain;base64,'..b)))()
-${junk[Math.floor(Math.random()*junk.length)] or ''}
-if syn then syn.protect_gui(game.CoreGui) end
-            `.trim();
-            
-            return f.replace(/\n/g, '\n');
-        }
+      <div class="col col-center">
+        <button id="btn">Obfuscate →</button>
+        <label class="check">
+          <input type="checkbox" id="cmt" checked>
+          <span>add lolfuscator header</span>
+        </label>
+        <p class="note">
+          Not real security, just for fun. Result uses <code>loadstring()</code>.
+        </p>
+        <p id="status" class="status">idle</p>
+      </div>
 
-        // Основная функция обфускации
-        function obfuscate() {
-            const input = document.getElementById('inputScript');
-            const output = document.getElementById('outputScript');
-            const script = input.value.trim();
-            
-            if (!script) {
-                alert('Вставьте скрипт для обфускации!');
-                return;
-            }
-            
-            const obfuscated = obfuscateScript(script);
-            output.value = obfuscated;
-            updateStats(script.length, obfuscated.length);
-        }
+      <div class="col">
+        <div class="label-row">
+          <span class="label">Output</span>
+          <span class="hint">obfuscated Lua</span>
+        </div>
+        <textarea id="out" spellcheck="false" readonly></textarea>
+      </div>
+    </div>
+  </section>
 
-        // Копирование вывода
-        function copyOutput() {
-            const output = document.getElementById('outputScript');
-            output.select();
-            document.execCommand('copy');
-            const btn = event.target;
-            const original = btn.textContent;
-            btn.textContent = '✅';
-            setTimeout(() => btn.textContent = original, 1500);
-        }
+  <footer class="foot">
+    <span>--// lolfuscator.meow 1.0 || lolfuscator.net</span>
+  </footer>
+</main>
 
-        // Обновление статистики
-        function updateStats(inputLen, outputLen) {
-            document.getElementById('inputSize').textContent = inputLen;
-            document.getElementById('outputSize').textContent = outputLen;
-            const compression = Math.round(((inputLen - outputLen) / inputLen) * 100);
-            document.getElementById('compression').textContent = compression > 0 ? `-${compression}%` : '0%';
-        }
-
-        // Очистка
-        function clearAll() {
-            document.getElementById('inputScript').value = '';
-            document.getElementById('outputScript').value = '';
-            updateStats(0, 0);
-        }
-
-        // Загрузка примера
-        function loadExample() {
-            document.getElementById('inputScript').value = `local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local character = player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
-
-humanoid.WalkSpeed = 100
-print("Godspeed activated!")`;
-            obfuscate();
-        }
-
-        // Скачивание
-        function downloadOutput() {
-            const output = document.getElementById('outputScript');
-            if (!output.value) return;
-            
-            const blob = new Blob([output.value], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'obfuscated_script.lua';
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        // Автообновление статистики
-        document.getElementById('inputScript').addEventListener('input', function() {
-            updateStats(this.value.length, 0);
-        });
-
-        // Инициализация
-        window.onload = function() {
-            createParticles();
-            updateStats(0, 0);
-        };
-    </script>
+<script src="obf.js"></script>
 </body>
 </html>
