@@ -12,14 +12,7 @@
     if(statusNode) statusNode.textContent = t;
   }
 
-  // На случай, если где‑то id не совпал, сразу увидишь в консоли
-  console.log("init lolfuscator", {input, output, btn, cmt, statusNode});
-
-  if (!btn || !input || !output) {
-    console.error("Required elements not found. Check ids in HTML.");
-    return;
-  }
-
+  // \123 формат безопасен для Lua-строки
   function toLuaEscapedBytes(src){
     var out = [];
     for (var i = 0; i < src.length; i++) {
@@ -52,6 +45,12 @@
       "if L then L(f)() end";
 
     return lua;
+  }
+
+  // защита от неправильных id
+  if (!btn || !input || !output) {
+    console.error("lolfuscator: check element ids in HTML");
+    return;
   }
 
   btn.onclick = function(){
