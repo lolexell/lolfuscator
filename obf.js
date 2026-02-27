@@ -1,47 +1,67 @@
 (function(){
-  var d = document,
-      $ = function(id){ return d.getElementById(id); },
-      input  = $("in"),
-      output = $("out"),
-      btn    = $("btn"),
-      cmt    = $("cmt");
+  var d = document;
+  function $(id){ return d.getElementById(id); }
 
-  function hex(n){ return ("00"+n.toString(16)).slice(-2); }
+  var input  = $("in");
+  var output = $("out");
+  var btn    = $("btn");
+  var cmt    = $("cmt");
+  var statusNode = $("status");
 
-  function encode(src){
-    var out = [], i = 0, c, marker;
-    for(; i < src.length; i++){
-      c = src.charCodeAt(i) ^ (13 + (i * 7) % 211);
-      marker = (i % 2 ? "~" : "!");
-      out.push("\\" + hex(c));
-      if(i % 11 === 0) out.push(marker);
+  function setStatus(t){
+    if(statusNode) statusNode.textContent = t;
+  }
+
+  // \xxx формат безопасен для Lua-строки и не ломает JS
+  function toLuaEscapedBytes(src){
+    var out = [];
+    for(var i=0;i<src.length;i++){
+      var c = src.charCodeAt(i);
+      out.push("\\" + c.toString(10)); // десятичный \123
     }
     return out.join("");
   }
 
-  function buildObfuscated(src){
-    var payload = encode(src);
-    var header = cmt.checked
+  function buildLua(src){
+    var payload = toLuaEscapedBytes(src);
+    var header = cmt && cmt.checked
       ? "--// lolfuscator.meow 1.0 || lolfuscator.net\n"
       : "";
-    var stub =
-"local o=(\""+payload+"\") local _=string.char local x={} local r=1 " +
-"for i=1,#o do local c=o:byte(i) if c==126 or c==33 then " +
-"else local v=c ~ (13+((r-1)*7)%211) x[r]=_(v) r=r+1 end end " +
-"local f=table.concat(x) local l=loadstring or load if l then l(f)() end";
-    return header .. stub;
+
+    // никаких дополнительных loadstring([[...]]) сверху
+    var lua =
+      header +
+      "local o = \"" + payload + "\"\n" +
+      "local _ = string.char\n" +
+      "local t = {}\n" +
+      "local r = 1\n" +
+      "for i = 1, #o do\n" +
+      " local c = o:byte(i)\n" +
+      " local v = c ~ (13 + ((r-1) * 7) % 211)\n" +
+      " t[r] = _(v)\n" +
+      " r = r + 1\n" +
+      "end\n" +
+      "local f = table.concat(t)\n" +
+      "local L = loadstring or load\n" +
+      "if L then L(f)() end";
+
+    return lua;
   }
 
   btn.onclick = function(){
     var v = input.value || "";
     if(!v.trim()){
       output.value = "-- nothing to obfuscate";
+      setStatus("idle: empty input");
       return;
     }
     try{
-      output.value = buildObfuscated(v);
+      var res = buildLua(v);
+      output.value = res;
+      setStatus("ok: obfuscated");
     }catch(e){
       output.value = "-- obfuscation error: " + (e && e.message || e);
+      setStatus("error");
     }
   };
 })();
