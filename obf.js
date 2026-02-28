@@ -19,7 +19,22 @@
     if(node) node.textContent = t;
   }
 
-  // ===== OBFUSCATOR =====
+  // ===== helpers =====
+
+  // лёгкое "сжатие" Lua: убираем лишние пробелы и пустые строки
+  function compressLua(src){
+    var lines = src.split(/\r?\n/);
+    var out = [];
+    for (var i = 0; i < lines.length; i++) {
+      var l = lines[i].trim();
+      if (l === "" || l.startsWith("--")) continue;
+      // несколько пробелов → один
+      l = l.replace(/\s+/g, " ");
+      out.push(l);
+    }
+    // объединяем в одну строку с ; чтобы было более "слеплено"
+    return out.join(";");
+  }
 
   // \ddd формат
   function toLuaEscapedBytes(src){
@@ -31,19 +46,17 @@
     return out.join("");
   }
 
-  // Обратная операция для \ddd → строка (внутреннее использование и в деобфускаторе)
   function fromLuaEscapedBytes(s){
     var res = [];
     var i = 0;
     while (i < s.length) {
       var c = s.charCodeAt(i);
       if (c === 92) { // '\'
-        // читаем до 3 цифр
         var j = i + 1;
         var digits = "";
         while (j < s.length && digits.length < 3) {
           var ch = s.charCodeAt(j);
-          if (ch >= 48 && ch <= 57) { // 0-9
+          if (ch >= 48 && ch <= 57) {
             digits += s.charAt(j);
             j++;
           } else break;
@@ -63,65 +76,49 @@
     return res.join("");
   }
 
+  // ===== OBFUSCATOR (визуально "под Luraph") =====
+
   function buildLua(src){
-    var payload = toLuaEscapedBytes(src);
+    // сначала лёгкая минификация
+    var compact = compressLua(src);
+    var payload = toLuaEscapedBytes(compact);
+
     var header = (cmt && cmt.checked)
       ? "--// lolfuscator.meow 1.0 || lolfuscator.net\n"
       : "";
 
+    // немного мусора и странных имён, формат похож на "VM loader"
     var lua =
+      header ..
+      "local _0=(\""..payload.."\");" ..
+      "local _1=string.char;local _2, _3, _4 = {},0,nil;" ..
+      "for _5=1,#_0 do local _6=_0:byte(_5);" ..
+      "if _6==92 then" .. -- '\'
+      " local _7={};local _8=_5+1;" ..
+      " while _8<=#_0 and #_7<3 do local _9=_0:byte(_8);" ..
+      "  if _9>=48 and _9<=57 then _7[#_7+1]=_1(_9);_8=_8+1 else break end end " ..
+      " local _a=tonumber(table.concat(_7));_2[#_2+1]=_1(_a);_5=_8-1;" ..
+      "else _2[#_2+1]=_1(_6) end end " ..
+      "local _b=table.concat(_2);local _c=(loadstring or load);if _c then _c(_b)() end";
+
+    // Чтобы избежать проблем с конкатенацией в JS, соберём через +
+    lua =
       header +
-      "local o = \"" + payload + "\"\n" +
-      "local t = {}\n" +
-      "local i = 1\n" +
-      "while i <= #o do\n" +
-      " local c = o:byte(i)\n" +
-      " if c == 92 then -- '\\\\'\n" +
-      "  local digits = {}\n" +
-      "  local j = i + 1\n" +
-      "  while j <= #o and #digits < 3 do\n" +
-      "   local ch = o:byte(j)\n" +
-      "   if ch >= 48 and ch <= 57 then\n" +
-      "    digits[#digits+1] = string.char(ch)\n" +
-      "    j = j + 1\n" +
-      "   else break end\n" +
-      "  end\n" +
-      "  local num = tonumber(table.concat(digits))\n" +
-      "  t[#t+1] = string.char(num)\n" +
-      "  i = j\n" +
-      " else\n" +
-      "  t[#t+1] = string.char(c)\n" +
-      "  i = i + 1\n" +
-      " end\n" +
-      "end\n" +
-      "local f = table.concat(t)\n" +
-      "local L = loadstring or load\n" +
-      "if L then L(f)() end";
+      "local _0 = \"" + payload + "\";" +
+      "local _1=string.char;local _2,_3,_4={},0,nil;" +
+      "for _5=1,#_0 do local _6=_0:byte(_5);" +
+      "if _6==92 then " +
+      " local _7={};local _8=_5+1;" +
+      " while _8<=#_0 and #_7<3 do local _9=_0:byte(_8);" +
+      "  if _9>=48 and _9<=57 then _7[#_7+1]=_1(_9);_8=_8+1 else break end end " +
+      " local _a=tonumber(table.concat(_7));_2[#_2+1]=_1(_a);_5=_8-1;" +
+      "else _2[#_2+1]=_1(_6) end end " +
+      "local _b=table.concat(_2);local _c=(loadstring or load);if _c then _c(_b)() end";
 
     return lua;
   }
 
-  // плавный вывод текста в textarea
-  function typeOut(text, target, done){
-    target.value = "";
-    var i = 0;
-    var len = text.length;
-    var speed = 5;
-
-    function step(){
-      if (i >= len) {
-        if (done) done();
-        return;
-      }
-      var chunkSize = 4;
-      var next = i + chunkSize;
-      target.value += text.slice(i, next);
-      i = next;
-      target.scrollTop = target.scrollHeight;
-      setTimeout(step, speed);
-    }
-    step();
-  }
+  // ===== INIT OBFUSCATOR BUTTON =====
 
   if (!btn || !input || !output) {
     console.error("lolfuscator: check element ids in HTML");
@@ -142,9 +139,9 @@
     setTimeout(function(){
       try {
         var res = buildLua(v);
-        typeOut(res, output, function(){
-          setStatus(statusNode, "ok: obfuscated");
-        });
+        output.value = res;
+        output.scrollTop = 0;
+        setStatus(statusNode, "ok: obfuscated");
       } catch (e) {
         console.error(e);
         output.value = "-- obfuscation error: " + (e && e.message || e);
@@ -154,6 +151,7 @@
   };
 
   // ===== DEOBFUSCATOR =====
+
   if (dbtn && dein && deout) {
     dbtn.onclick = function(){
       var src = dein.value || "";
@@ -166,10 +164,10 @@
       setStatus(dstatus, "parsing...");
 
       try{
-        // вытаскиваем содержимое строки после `local o = "`
-        var m = src.match(/local%s+o%s*=%s*\"([^"]*)\"/);
+        // ищем local _0 = "...."
+        var m = src.match(/local%s+_0%s*=%s*\"([^"]*)\"/);
         if (!m) {
-          deout.value = "-- can't find payload (local o = \"...\")";
+          deout.value = "-- can't find payload (local _0 = \"...\")";
           setStatus(dstatus, "error");
           return;
         }
