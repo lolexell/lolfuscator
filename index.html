@@ -70,32 +70,22 @@
       <span class="panel-badge">tool</span>
     </div>
 
-    <div class="panel-body" style="grid-template-columns:minmax(0,1.2fr) auto minmax(0,1.2fr);">
-      <div class="col">
-        <div class="label-row">
-          <span class="label">Obfuscated</span>
-          <span class="hint">paste lolfuscator output</span>
-        </div>
-        <textarea id="dein" spellcheck="false" placeholder="-- paste output from lolfuscator.meow"></textarea>
-      </div>
+<div class="panel bottom">
+  <div class="panel-header">
+    <h2>Run Lua</h2>
+    <p>Test Run</p>
+  </div>
 
-      <div class="col col-center">
-        <button id="dbtn">Deobfuscate →</button>
-        <p class="note">
-          Works only with this obfuscator format (\ddd bytes).
-        </p>
-        <p id="dstatus" class="status">idle</p>
-      </div>
+  <div class="io-row">
+    <textarea id="runlog" readonly placeholder="--// lolfuscator 1.0 || lolfuscator.net"></textarea>
+  </div>
 
-      <div class="col">
-        <div class="label-row">
-          <span class="label">Deobfuscated</span>
-          <span class="hint">original Lua</span>
-        </div>
-        <textarea id="deout" spellcheck="false" readonly></textarea>
-      </div>
-    </div>
-  </section>
+  <div class="actions">
+    <button id="runLuaBtn">Run Lua</button>
+    <span id="runStatus" class="status"></span>
+  </div>
+</div>
+
 
   <footer class="foot">
     <span>--// lolfuscator.meow 1.0 || lolfuscator.net</span>
