@@ -1,164 +1,180 @@
 (function(){
   var d = document;
-  function $(id){ return d.getElementById(id); }
+  function g(id){ return d.getElementById(id); }
 
-  // obfuscator
-  var input  = $("in");
-  var output = $("out");
-  var btn    = $("btn");
-  var cmt    = $("cmt");
-  var statusNode = $("status");
+  // --- obfuscator refs ---
+  var srcIn   = g("in");      // input textarea
+  var outOut  = g("out");     // output textarea
+  var btnObf  = g("btn");     // Obfuscate button
+  var cmt     = g("cmt");     // comment/status small text
+  var statusN = g("status");  // main status label
 
-  // deobfuscator
-  var dein   = $("dein");
-  var deout  = $("deout");
-  var dbtn   = $("dbtn");
-  var dstatus = $("dstatus");
-
-  function setStatus(node, t){
-    if(node) node.textContent = t;
+  function setStatus(text, cls){
+    if(!statusN) return;
+    statusN.textContent = text;
+    statusN.className = "status " + (cls || "");
   }
 
-  // лёгкое сжатие
-  function compressLua(src){
-    var lines = src.split(/\r?\n/);
-    var out = [];
-    for (var i = 0; i < lines.length; i++) {
-      var l = lines[i].trim();
-      if (!l || l.startsWith("--")) continue;
-      l = l.replace(/\s+/g, " ");
-      out.push(l);
+  // нормализация Lua: ужимаем, чтобы меньше читалось
+  function normalizeLua(src){
+    if(!src) return "";
+    var s = src.replace(/\r/g, "");
+    s = s.replace(/--\[\[[\s\S]*?]]/g, "");    // многострочные комменты
+    s = s.replace(/--[^\n]*/g, "");           // однострочные комменты
+    s = s.replace(/[ \t]+/g, " ");
+    s = s.replace(/\n+/g, "\n");
+    s = s.replace(/\s*([\(\)\{\}\[\];,=+\-*/%^#<>~])\s*/g, "$1");
+    s = s.replace(/^\s+|\s+$/g, "");
+    s = s.replace(/\n/g, ";");
+    return s;
+  }
+
+  // кодируем строку в массив псевдо‑байтов (с XOR/сдвигами)
+  function encodeWeird(str){
+    var key = 157;
+    var arr = [];
+    for(var i=0;i<str.length;i++){
+      var c = str.charCodeAt(i);
+      // немного рандомного мусора в расчёте
+      var salt = (i * 73 + 19) & 255;
+      var v = (c ^ key ^ salt);
+      v = ((v << 3) | (v >>> 5)) & 255; // циклический сдвиг
+      arr.push(v);
+      key = (key + 37) & 255;
     }
-    return out.join(";");
+    return arr;
   }
 
-  // pack to \ddd
-  function toLuaEscapedBytes(src){
-    var out = [];
-    for (var i = 0; i < src.length; i++) {
-      var c = src.charCodeAt(i);
-      out.push("\\" + c.toString(10));
+  // превращаем массив чисел в lua-таблицу вида {123,45,...}
+  function toLuaTable(arr){
+    var parts = [];
+    for(var i=0;i<arr.length;i++){
+      parts.push(arr[i].toString());
     }
-    return out.join("");
+    return "{" + parts.join(",") + "}";
   }
 
-  // unpack \ddd
-  function fromLuaEscapedBytes(s){
-    var res = [];
-    var i = 0;
-    while (i < s.length) {
-      var c = s.charCodeAt(i);
-      if (c === 92) {
-        var j = i + 1;
-        var digits = "";
-        while (j < s.length && digits.length < 3) {
-          var ch = s.charCodeAt(j);
-          if (ch >= 48 && ch <= 57) {
-            digits += s.charAt(j);
-            j++;
-          } else break;
-        }
-        if (digits.length > 0) {
-          res.push(String.fromCharCode(parseInt(digits, 10)));
-          i = j;
-          continue;
-        }
-      }
-      res.push(s.charAt(i));
-      i++;
-    }
-    return res.join("");
+  // генерим более “виртуальный” загрузчик
+  function buildLoader(plain){
+    var bytes = encodeWeird(plain);
+    var tableStr = toLuaTable(bytes);
+
+    var stub =
+"local lIlIlI0O0O=" + tableStr + " " +
+"local function lIIIIllI1(lIIllI1I,l1IlIl1I) " +
+"local IIlIl1lI,IlllIl1I=0,{} " +
+"local l1l1Il1I=157 " +
+"for lI1lIlIl=1,#lIIllI1I do " +
+"local IIl1lIlI=lIIllI1I[lI1lIlIl] " +
+"local IlIl1IlI=((IIl1lIlI >> 3)&255)|((IIl1lIlI << 5)&255) " +
+"local lIl1lIlI=(IlIl1IlI ~ l1l1Il1I ~ ((IIlIl1lI*73+19)&255))&255 " +
+"IlllIl1I[#IlllIl1I+1]=string.char(lIl1lIlI) " +
+"l1l1Il1I=(l1l1Il1I+37)&255 " +
+"IIlIl1lI=IIlIl1lI+1 " +
+"end " +
+"local l1I1I1Il=table.concat(IlllIl1I) " +
+"local l11lI1Il=(lIIllI1I and l1IlIl1I) and 0 or 1 " +
+"if l11lI1Il~=1 then error('vm broken') end " +
+"local _llIl1I1=loadstring or load " +
+"if not _llIl1I1 then error('no loader') end " +
+"return _llIl1I1(l1I1I1Il)() " +
+"end " +
+"local function lIIlIIlIl(...) return ... end " +
+"return lIIIIllI1(lIlIlI0O0O, lIIlIIlIl)";
+
+    var header =
+"--// lolfuscator.meow 1.0 || lolfuscator.net\n" +
+"local _0O0,OO00,O0O0=nil,nil,nil " +
+"for _O0O=1,0 do _0O0=OO00 or O0O0 end ";
+
+    return header + stub;
   }
 
-  // генерация luraph‑стайл loader’а
-  function buildLua(src){
-    var compact = compressLua(src);
-    var payload = toLuaEscapedBytes(compact);
-    var header = (cmt && cmt.checked)
-      ? "--// lolfuscator.meow 1.0 || lolfuscator.net\n"
-      : "";
-
-    // мусорные имена и VM‑подобная конструкция
-    var lua =
-      header +
-      "local lIlIlI0O0O=\"" + payload + "\";" +
-      "local O0l1l0=string.char;local l0l1I10,IllI1I,Il0l1l={},{},{};local O00O01=1;local l1I1O0=(#lIlIlI0O0O%3)+1;local I0O0Ol=(loadstring or load);" +
-      "for lI0Ol0=1,#lIlIlI0O0O do local l1l0OI=lIlIlI0O0O:byte(lI0Ol0);" +
-        "if l1l0OI==92 then " + /* '\' */
-          "local I1l0l0={};local O1O0O0=lI0Ol0+1;while O1O0O0<=#lIlIlI0O0O and #I1l0l0<3 do local O1I1O1=lIlIlI0O0O:byte(O1O0O0);" +
-          "if O1I1O1>=48 and O1I1O1<=57 then I1l0l0[#I1l0l0+1]=O0l1l0(O1I1O1);O1O0O0=O1O0O0+1 else break end end;" +
-          "local lO0O10=tonumber(table.concat(I1l0l0)) or 0;Il0l1l[#Il0l1l+1]=O0l1l0(lO0O10);lI0Ol0=O1O0O0-1;" +
-        "else Il0l1l[#Il0l1l+1]=O0l1l0(l1l0OI) end;" +
-      "end;" +
-      "local OI0I01=table.concat(Il0l1l);" +
-      "--[[lolfuscator-vm]]" +
-      "local function l11O0I(l0OOO1,Ol1O0O) return (l0OOO1 and Ol1O0O) and l0OOO1 or Ol1O0O end;" +
-      "local function O0I0O1(OI0,lOO) if not OI0 then return lOO end return OI0 end;" +
-      "if I0O0Ol then local OOl01I=OI0I01;local IOI1Ol=l11O0I(I0O0Ol,load);local lO0I1O=O0I0O1(OOl01I,OI0I01);IOI1Ol(lO0I1O)() end";
-
-    return lua;
-  }
-
-  // init obfuscator
-  if (!btn || !input || !output) {
-    console.error("lolfuscator: check element ids in HTML");
-    return;
-  }
-
-  btn.onclick = function(){
-    var v = input.value || "";
-    if (!v.trim()) {
-      output.value = "-- nothing to obfuscate";
-      setStatus(statusNode, "idle: empty input");
+  function runObfuscate(){
+    var v = (srcIn && srcIn.value) || "";
+    if(!v.trim()){
+      if(outOut) outOut.value = "-- nothing to obfuscate";
+      setStatus("idle","idle");
       return;
     }
+    try{
+      setStatus("obfuscating...","working");
+      if(cmt) cmt.textContent = "-- generating pseudo-VM garbage";
 
-    output.value = "Obfuscating... Please wait...";
-    setStatus(statusNode, "working...");
+      var norm = normalizeLua(v);
+      var out  = buildLoader(norm);
 
-    setTimeout(function(){
-      try {
-        var res = buildLua(v);
-        output.value = res;
-        output.scrollTop = 0;
-        setStatus(statusNode, "ok: obfuscated");
-      } catch (e) {
-        console.error(e);
-        output.value = "-- obfuscation error: " + (e && e.message || e);
-        setStatus(statusNode, "error");
-      }
-    }, 1000);
-  };
+      if(outOut) outOut.value = out;
+      setStatus("ok","ok");
+    }catch(e){
+      if(outOut) outOut.value = "-- obfuscation error: " + (e && e.message || e);
+      setStatus("error","error");
+    }
+  }
 
-  // deobfuscator
-  if (dbtn && dein && deout) {
-    dbtn.onclick = function(){
-      var src = dein.value || "";
-      if (!src.trim()) {
-        deout.value = "-- nothing to deobfuscate";
-        setStatus(dstatus, "idle: empty input");
+  if(btnObf){
+    btnObf.onclick = runObfuscate;
+  }
+})();
+
+// --- RUN LUA вместо деобфускатора ---
+(function(){
+  var d = document;
+  function g(id){ return d.getElementById(id); }
+
+  var srcIn   = g("in");          // исходный Lua (верхнее поле)
+  var runBtn  = g("runLuaBtn");
+  var runLog  = g("runlog");
+  var runStat = g("runStatus");
+
+  function setRunStatus(text, cls){
+    if(!runStat) return;
+    runStat.textContent = text;
+    runStat.className = "status " + (cls || "");
+  }
+
+  if(runBtn && runLog && srcIn){
+    runBtn.onclick = function(){
+      var code = srcIn.value || "";
+      if(!code.trim()){
+        runLog.value = "-- nothing to run";
+        setRunStatus("no input","error");
         return;
       }
 
-      setStatus(dstatus, "parsing...");
+      if(!window.fengari || typeof fengari.load !== "function"){
+        runLog.value =
+"-- fengari-web is not loaded.\n" +
+"Add:\n" +
+"<script src=\"https://unpkg.com/fengari-web/dist/fengari-web.js\"></script>\n" +
+"before obf.js";
+        setRunStatus("no fengari","error");
+        return;
+      }
 
       try{
-        // ищем local lIlIlI0O0O = "...."
-        var m = src.match(/local%s+lIlIlI0O0O%s*=%s*\"([^"]*)\"/);
-        if (!m) {
-          deout.value = "-- can't find payload (local lIlIlI0O0O = \"...\")";
-          setStatus(dstatus, "error");
-          return;
-        }
+        runLog.value = "";
+        setRunStatus("running...","working");
 
-        var payload = m[1];
-        var plain = fromLuaEscapedBytes(payload);
-        deout.value = plain;
-        setStatus(dstatus, "ok: deobfuscated");
+        var out = [];
+        var oldLog = console.log;
+        console.log = function(){
+          var msg = Array.prototype.slice.call(arguments).join(" ");
+          out.push(msg);
+        };
+
+        // запуск Lua-кода через fengari [web:25][web:28]
+        var fn = fengari.load(code, "lolfuscator_run");
+        fn();
+
+        console.log = oldLog;
+
+        runLog.value = out.join("\n") || "-- (no output)";
+        setRunStatus("ok","ok");
       }catch(e){
-        console.error(e);
-        deout.value = "-- deobfuscation error: " + (e && e.message || e);
-        setStatus(dstatus, "error");
+        console.log = oldLog;
+        runLog.value = "-- lua runtime error:\n" + (e && e.message || e);
+        setRunStatus("error","error");
       }
     };
   }
