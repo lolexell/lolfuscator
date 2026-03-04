@@ -17,7 +17,7 @@
     <div class="brand">
       <span class="brand-main">lolfuscator</span><span class="brand-dot">.meow</span>
     </div>
-    <div class="subtitle">simple Lua loadstring obfuscator</div>
+    <div class="subtitle">Lua obfuscator</div>
   </header>
 
   <section class="panel">
@@ -25,7 +25,7 @@
       <span class="pill pill-green"></span>
       <span class="pill pill-yellow"></span>
       <span class="pill pill-red"></span>
-      <span class="panel-title">script.lua</span>
+      <span class="panel-title">script lua</span>
       <span class="panel-badge">online</span>
     </div>
 
@@ -45,7 +45,7 @@
           <span>add lolfuscator header</span>
         </label>
         <p class="note">
-          Not real security, just for fun. Result uses <code>loadstring()</code>.
+          Not real security, just for fun. Result uses <code>base64 x luraph encode</code>.
         </p>
         <p id="status" class="status">idle</p>
       </div>
@@ -61,41 +61,8 @@
   </section>
 
 
-  <section class="panel">
-    <div class="panel-header">
-      <span class="pill pill-green"></span>
-      <span class="pill pill-yellow"></span>
-      <span class="pill pill-red"></span>
-      <span class="panel-title">run lua</span>
-      <span class="panel-badge">online</span>
-    </div>
-
-    <div class="panel-body">
-      <div class="col">
-        <div class="label-row">
-          <span class="label">Input</span>
-          <span class="hint">paste your Lua script</span>
-        </div>
-        <textarea id="in" spellcheck="false" placeholder="print(&quot;hello, lolfuscator.meow&quot;)"></textarea>
-      </div>
-
-<div class="actions">
-    <button id="runLuaBtn">Run Lua</button>
-    <span id="runStatus" class="status"></span>
-  </div>
-
-      <div class="col">
-        <div class="label-row">
-          <span class="label">Result</span>
-          <span class="hint">hi<span>
-        </div>
-        <textarea id="out" spellcheck="false" readonly></textarea>
-      </div>
-    </div>
-  </section>
 
 
 <script src="obf.js"></script>
-    <script src="https://unpkg.com/fengari-web/dist/fengari-web.js"></script>
 </body>
 </html>
