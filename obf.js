@@ -43,14 +43,14 @@
   }
 
   function toLuraphTable(arr){
-    return "{" + arr.map(v => "0x"+v.toString(16).padStart(2,"0")).join(",")+"}";
+    return "{" + arr.map(function(v){ return "0x" + v.toString(16).padStart(2, "0"); }).join(",") + "}";
   }
 
   function buildLuraphLoader(plain){
     var bytes = encodeLuraph(plain);
     var tbl = toLuraphTable(bytes);
 
-    return `--// lolfuscator 2.0 | lolfuscator.net
+    return `--// lolfuscator.meow 2.0 | lolfuscator.net
 local _L=${tbl} local _K=0xAB local _R={} local _I=1
 while _I<=#_L do
 local _V=_L[_I]
@@ -66,28 +66,25 @@ local _D=loadstring or load return _D(table.concat(_R))()
   }
 
   function runObfuscate(){
-    var v = (srcIn && srcIn.value) || "";
+    var v = srcIn.value || "";
     if(!v.trim()){
-      if(outOut) outOut.value = "-- nothing to obfuscate";
-      setStatus("idle","idle");
+      outOut.value = "-- nothing to obfuscate";
+      setStatus("idle", "idle");
       return;
     }
     try{
-      setStatus("obfuscating...","working");
-      if(cmt) cmt.textContent = "-- lolfuscator 2.0 | base64 x luraph encoding";
-
+      setStatus("obfuscating...", "working");
       var norm = normalizeLua(v);
-      var out  = buildLuraphLoader(norm);
-
-      if(outOut) outOut.value = out;
-      setStatus("done","ok");
+      var out = buildLuraphLoader(norm);
+      outOut.value = out;
+      setStatus("done ✓", "ok");
     }catch(e){
-      if(outOut) outOut.value = "-- error: " + (e && e.message || e);
-      setStatus("error","error");
+      outOut.value = "-- error: " + e.message;
+      setStatus("error ✗", "error");
     }
   }
 
   if(btnObf){
-    btnObf.onclick = runObfuskate;
+    btnObf.onclick = runObfuscate;  // ← ИСПРАВЛЕНО: runObfuscate
   }
 })();
