@@ -74,7 +74,7 @@ local _D=loadstring or load return _D(table.concat(_R))()
     }
     try{
       setStatus("obfuscating...","working");
-      if(cmt) cmt.textContent = "-- luraph-style encoding";
+      if(cmt) cmt.textContent = "-- lolfuscator 2.0 | base64 x luraph encoding";
 
       var norm = normalizeLua(v);
       var out  = buildLuraphLoader(norm);
