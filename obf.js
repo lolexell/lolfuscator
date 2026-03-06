@@ -20,71 +20,119 @@
                .replace(/--\[\[[\s\S]*?\]\]/g, "")
                .replace(/--[^\n]*/g, "")
                .replace(/[ \t]+/g, " ")
-               .replace(/\n+/g, ";")
-               .replace(/\s*([()\[\]{};,=+\-*/%^#<>~|&!])\s*/g, "$1")
-               .replace(/^ +| +$/gm, "")
-               .replace(/;;+/g, ";");
+               .replace(/^\s+|\s+$/gm, "");
     return s;
   }
 
-  function encodeLuraph(str){
-    var enc = [];
-    var state = 0xAB;
-    for(var i = 0; i < str.length; i++){
-      var c = str.charCodeAt(i);
-      var v = c ^ state;
-      v = ((v << 1) | (v >>> 7)) & 0xFF;
-      v ^= 0x5E;
-      v = ((v << 3) | (v >>> 5)) & 0xFF;
-      state = (state * 0x41 + 0x403 + i) & 0xFF;
-      enc.push(v);
+  function xorString(str, key){
+    var out = [];
+    for(var i=0;i<str.length;i++){
+      var k = key.charCodeAt(i % key.length);
+      out.push(String.fromCharCode(str.charCodeAt(i) ^ k));
     }
-    return enc;
+    return out.join("");
   }
 
-  function toLuraphTable(arr){
-    return "{" + arr.map(function(v){ return "0x" + v.toString(16).padStart(2, "0"); }).join(",") + "}";
+  function b64encode(str){
+    return btoa(str);
   }
 
-  function buildLuraphLoader(plain){
-    var bytes = encodeLuraph(plain);
-    var tbl = toLuraphTable(bytes);
+  function buildVM(plain){
+    var key = "lolfuscator.meow";
+    var norm = normalizeLua(plain);
+    var xored = xorString(norm, key);
+    var b64 = b64encode(xored);
 
-    return `--// lolfuscator.meow 2.0 | lolfuscator.net
-local _L=${tbl} local _K=0xAB local _R={} local _I=1
-while _I<=#_L do
-local _V=_L[_I]
-_V=((_V>>>1)|(_V<<7))&255 _V=_V~0x5E
-_V=((_V>>>3)|(_V<<5))&255 _V=_V~_K
-_R[_I]=string.char(_V)
-_K=(_K*65+1027+(_I-1))&255 _I=_I+1
-end
-local _X=0 for _=1,math.min(10,#_R) do _X=_X+string.byte(_R[_]) end
-if _X%11~=4 then error("LVM")end
-local _D=loadstring or load return _D(table.concat(_R))()
-`;
+    var stub =
+"--// lolfuscator 3.0 || lolfuscator.net\n"+
+"local _K='" + key.replace(/'/g,"\\'") + "'\n"+
+"local _B64='" + b64 + "'\n"+
+"local _abc='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'\n"+
+"local function _from_b64(d)\n"+
+"  d=d:gsub('[^'.._abc..'=]','')\n"+
+"  return (d:gsub('.',function(x)\n"+
+"    if x=='=' then return '' end\n"+
+"    local r,f='',(_abc:find(x)-1)\n"+
+"    for i=6,1,-1 do r=r..(f%2^i-f%2^(i-1)>0 and '1' or '0') end\n"+
+"    return r\n"+
+"  end):gsub('%d%d%d?%d?%d?%d?%d?%d?',function(x)\n"+
+"    if #x~=8 then return '' end\n"+
+"    local c=0\n"+
+"    for i=1,8 do c=c+(x:sub(i,i)=='1' and 2^(8-i) or 0) end\n"+
+"    return string.char(c)\n"+
+"  end))\n"+
+"end\n"+
+"local function _xor(s,k)\n"+
+"  local t={} local kl=#k\n"+
+"  for i=1,#s do\n"+
+"    local c=s:byte(i) local kk=k:byte((i-1)%kl+1)\n"+
+"    t[#t+1]=string.char(bit32.bxor(c,kk))\n"+
+"  end\n"+
+"  return table.concat(t)\n"+
+"end\n"+
+"local _decoded=_xor(_from_b64(_B64),_K)\n"+
+"local _bc={} for i=1,#_decoded do _bc[i]=_decoded:byte(i) end\n"+
+"local _stack={} local _sp=0\n"+
+"local function push(v) _sp=_sp+1 _stack[_sp]=v end\n"+
+"local function pop() local v=_stack[_sp] _stack[_sp]=nil _sp=_sp-1 return v end\n"+
+"local _ip=1\n"+
+"while _ip<=#_bc do\n"+
+"  local op=_bc[_ip];_ip=_ip+1\n"+
+"  if op==1 then\n"+
+"    local len=_bc[_ip];_ip=_ip+1\n"+
+"    local buf={} for i=1,len do buf[i]=string.char(_bc[_ip]);_ip=_ip+1 end\n"+
+"    local chunk=table.concat(buf)\n"+
+"    local l=loadstring or load\n"+
+"    return l(chunk)()\n"+
+"  elseif op==0 then\n"+
+"    break\n"+
+"  else\n"+
+"    _ip=_ip+op%2\n"+
+"  end\n"+
+"end\n";
+
+    var bytes = [];
+    var src = norm;
+    var len = src.length;
+    if(len>255) len = 255;
+    bytes.push(1);
+    bytes.push(len);
+    for(var i=0;i<len;i++){
+      bytes.push(src.charCodeAt(i));
+    }
+    bytes.push(0);
+
+    var bcStr = String.fromCharCode.apply(null, bytes);
+    var bcXor = xorString(bcStr, key);
+    var bcB64 = b64encode(bcXor);
+
+    stub = stub.replace(b64, bcB64);
+
+    return stub;
   }
 
   function runObfuscate(){
-    var v = srcIn.value || "";
+    var v = (srcIn && srcIn.value) || "";
     if(!v.trim()){
-      outOut.value = "-- nothing to obfuscate";
-      setStatus("idle", "idle");
+      if(outOut) outOut.value = "-- nothing to obfuscate";
+      setStatus("idle","idle");
       return;
     }
     try{
-      setStatus("obfuscating...", "working");
-      var norm = normalizeLua(v);
-      var out = buildLuraphLoader(norm);
-      outOut.value = out;
-      setStatus("done ✓", "ok");
+      setStatus("obfuscating...","working");
+      if(cmt) cmt.textContent = "";
+
+      var out  = buildVM(v);
+
+      if(outOut) outOut.value = out;
+      setStatus("done","ok");
     }catch(e){
-      outOut.value = "-- error: " + e.message;
-      setStatus("error ✗", "error");
+      if(outOut) outOut.value = "-- error: " + (e && e.message || e);
+      setStatus("error","error");
     }
   }
 
   if(btnObf){
-    btnObf.onclick = runObfuscate;  // ← ИСПРАВЛЕНО: runObfuscate
+    btnObf.onclick = runObfuscate;
   }
 })();
