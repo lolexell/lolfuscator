@@ -5,13 +5,61 @@
   var srcIn   = g("in");
   var outOut  = g("out");
   var btnObf  = g("btn");
-  var cmt     = g("cmt");
   var statusN = g("status");
+
+  var keyMenu   = g("key-menu");
+  var keyUnlock = g("key-unlock");
+  var keyInput  = g("license");
+  var keyStatus = g("key-status");
+  var page      = d.querySelector(".page");
+
+  // ВСТАВЬ СВОЙ RAW URL ГИСТА
+  var GIST_URL = "https://gist.githubusercontent.com/lolexell/d6c16c6bb4fe536c6fc3f68cd4204fe6/raw/52fb1d3b0abd1be0d9e2ec6391c0a462b49da236/keys_databaseLOLFUSCATOR.db";
+
+  var keyValid = false;
 
   function setStatus(text, cls){
     if(!statusN) return;
     statusN.textContent = text;
     statusN.className = "status " + (cls || "");
+  }
+
+  function setKeyStatus(text){
+    if(keyStatus) keyStatus.textContent = text;
+  }
+
+  async function fetchKeys(){
+    try{
+      var res = await fetch(GIST_URL);
+      if(!res.ok) throw new Error("keys http "+res.status);
+      var text = await res.text();
+      return text.split(/\r?\n/).map(function(l){return l.trim();}).filter(Boolean);
+    }catch(e){
+      console.error(e);
+      return [];
+    }
+  }
+
+  async function tryUnlock(){
+    var key = (keyInput && keyInput.value.trim()) || "";
+    if(!key){
+      setKeyStatus("enter key");
+      return;
+    }
+    setKeyStatus("checking...");
+    var keys = await fetchKeys();
+    if(!keys.length){
+      setKeyStatus("keys error");
+      return;
+    }
+    if(keys.indexOf(key) === -1){
+      setKeyStatus("invalid key");
+      return;
+    }
+    keyValid = true;
+    setKeyStatus("key ok");
+    if(page) page.classList.remove("blurred");
+    // key-menu НЕ скрываем, по твоему условию
   }
 
   function normalizeLua(src){
@@ -36,7 +84,6 @@
     return btoa(str);
   }
 
-  // прячем ключ как lua-таблицу байт
   function hideKey(raw){
     var nums = [];
     for(var i=0;i<raw.length;i++) nums.push(raw.charCodeAt(i));
@@ -47,7 +94,6 @@
     var rawKey = "DNchubD6FNiydub97346dbfkjd";
     var norm   = normalizeLua(plain);
 
-    // строим байткод VM: [1,len,bytes...,0]
     var bytes = [];
     var len   = norm.length;
     if(len > 255) len = 255;
@@ -56,7 +102,6 @@
     for(var i=0;i<len;i++) bytes.push(norm.charCodeAt(i));
     bytes.push(0);
 
-    // шифруем байткод xor+base64
     var bcStr = String.fromCharCode.apply(null, bytes);
     var bcXor = xorString(bcStr, rawKey);
     var bcB64 = b64encode(bcXor);
@@ -107,7 +152,14 @@
     return stub;
   }
 
-  function runObfuscate(){
+  async function runObfuscate(){
+    if(!keyValid){
+      if(outOut) outOut.value = "-- enter valid key first";
+      if(keyMenu) keyMenu.style.display = "flex";
+      if(page) page.classList.add("blurred");
+      return;
+    }
+
     var v = (srcIn && srcIn.value) || "";
     if(!v.trim()){
       if(outOut) outOut.value = "-- nothing to obfuscate";
@@ -116,20 +168,25 @@
     }
     try{
       setStatus("obfuscating...","working");
-      if(cmt) cmt.textContent = "";
-
       var out = buildObf(v);
       if(outOut) outOut.value = out;
-
       setStatus("done","ok");
     }catch(e){
+      console.error(e);
       if(outOut) outOut.value = "-- error: " + (e && e.message || e);
       setStatus("error","error");
-      console.error(e);
     }
   }
 
+  // init
+  if(page) page.classList.add("blurred");
+  if(keyMenu) keyMenu.style.display = "flex";
+
+  if(keyUnlock){
+    keyUnlock.onclick = function(){ tryUnlock(); };
+  }
+
   if(btnObf){
-    btnObf.onclick = runObfuscate;
+    btnObf.onclick = function(){ runObfuscate(); };
   }
 })();
