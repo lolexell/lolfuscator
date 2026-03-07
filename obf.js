@@ -8,15 +8,12 @@
   var TAB_LOGIN    = $("tab-login");
   var TAB_REGISTER = $("tab-register");
   var P  = Q.querySelector(".page");
-
-  // простой account dashboard (добавь в index.html <div id="dashboard"></div> где-то под header)
   var DASH = $("dashboard");
 
-  // БАЗА КЛЮЧЕЙ (db на Gist)
   var DB_URL = "https://gist.githubusercontent.com/lolexell/d6c16c6bb4fe536c6fc3f68cd4204fe6/raw/e412e60149f60505c35785bc636de459eabf5046/keys_databaseLOLFUSCATOR.db";
 
-  var mode = "login";   // "login" | "register"
-  var __KFLAG = false;  // доступ к обфускатору
+  var mode = "login";
+  var __KFLAG = false;
   var currentUser = null;
   var currentKey  = null;
 
@@ -70,11 +67,9 @@
 
   function dbHasKey(dbText, key){
     if(!dbText || !key) return false;
-    // точное вхождение (ключ в верхнем регистре)
     return dbText.toUpperCase().indexOf(key) !== -1;
   }
 
-  // формат ключа: LOLF-XXXX-XXXX-XXXX (A-Z0-9)
   function isValidKeyFormat(key){
     return /^LOLF-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(key.toUpperCase());
   }
@@ -158,7 +153,6 @@
         setKeyStatus("key already exists in db");
         return;
       }
-      // нет сервера чтобы реально записать в базу, поэтому просто локально помечаем как залогиненный
       __KFLAG = true;
       currentKey  = key;
       currentUser = user;
@@ -302,6 +296,34 @@
     }
   }
 
+  // draggable helper
+  function makeDraggable(winEl, handleEl){
+    if(!winEl || !handleEl) return;
+    var offsetX = 0, offsetY = 0, startX = 0, startY = 0;
+    handleEl.addEventListener("mousedown", function(e){
+      e.preventDefault();
+      startX = e.clientX;
+      startY = e.clientY;
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mouseup", onUp);
+    });
+    function onMove(e){
+      e.preventDefault();
+      offsetX = e.clientX - startX;
+      offsetY = e.clientY - startY;
+      startX = e.clientX;
+      startY = e.clientY;
+      var rect = winEl.getBoundingClientRect();
+      winEl.style.transform = "none";
+      winEl.style.left = (rect.left + offsetX) + "px";
+      winEl.style.top  = (rect.top  + offsetY) + "px";
+    }
+    function onUp(){
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    }
+  }
+
   // init
   if(P) P.classList.add("blurred");
   if(KM) KM.style.display = "flex";
@@ -328,4 +350,13 @@
   if(B){
     B.onclick = function(){ runObfuscate(); };
   }
+
+  // draggable key window и обфускатор
+  var KEY_WIN   = Q.querySelector(".key-window");
+  var KEY_HEAD  = Q.querySelector(".key-header");
+  var OBF_WIN   = $("obf-window");
+  var OBF_HEAD  = $("obf-header");
+
+  makeDraggable(KEY_WIN, KEY_HEAD);
+  makeDraggable(OBF_WIN, OBF_HEAD);
 })();
