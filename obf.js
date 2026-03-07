@@ -31,17 +31,12 @@
   function buildVM(plain){
     var rawKey="DNchubD6FNiydub97346dbfkjd";
     var norm=normalizeLua(plain);
-    var x=xorString(norm,rawKey);
-    var b=b64encode(x);
 
+    // VM-пакет
     var bytes=[],src=norm,len=src.length;
     if(len>255)len=255;
-    bytes[1]=1;
-    bytes[2]=len;
-    for(var i=0;i<len;i++)bytes[#bytes+1]=src.charCodeAt(i); // не JS, только для вида
-
-    bytes=[];
-    bytes.push(1);bytes.push(len);
+    bytes.push(1);
+    bytes.push(len);
     for(var k=0;k<len;k++)bytes.push(src.charCodeAt(k));
     bytes.push(0);
 
@@ -74,7 +69,7 @@
 +" local op=_bc[_ip];_ip=_ip+1 "
 +" if op==1 then "
 +"  local len=_bc[_ip];_ip=_ip+1 "
-+"  local buf={} for i=1,len do buf[i]=string.char(_bc[_ip]);_ip=_ip+1 end "
+"+"  local buf={} for i=1,len do buf[i]=string.char(_bc[_ip]);_ip=_ip+1 end "
 +"  for j=1,3 do local s=j*j*j end "
 +"  local chunk=table.concat(buf) "
 +"  local l=loadstring or load "
