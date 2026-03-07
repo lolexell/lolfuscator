@@ -1,54 +1,139 @@
-function CORE_OBF(src){
+(function(){
+  var Q = document;
+  function _(x){return Q.getElementById(x);}
 
-  // три ключа
-  var __K = [
-    "DNchubD6FNiydub97346dbfkjd",
-    "K9s7d2Ghs92hGDh27sd8H2hs8d",
-    "Z1x9c3Vb7Nm4Qp2Lk8Jf5Hg0Rw"
-  ];
+  var I = _("in"), O = _("out"), B = _("btn"), S = _("status");
+  var KM = _("key-menu"), KU = _("key-unlock"), KL = _("license"), KS = _("key-status");
+  var P = Q.querySelector(".page");
 
-  // ненужная обёртка
-  function ___wrapInNoise(z){
-    var acc = 0;
-    for(var i=0;i<7;i++) acc += (i*i)%3;
-    return z + (acc>1000?"":"");
+  // ВСТАВЬ СВОЙ RAW URL ГИСТА
+  var GIST_URL = "https://gist.githubusercontent.com/lolexell/d6c16c6bb4fe536c6fc3f68cd4204fe6/raw/a792e36e5eff6439959bc44a415cce5170c9c02e/keys_databaseLOLFUSCATOR.db";
+
+  var __KFLAG = false;
+
+  function SS(t,c){
+    if(!S) return;
+    S.textContent = t;
+    S.className = "status "+(c||"");
   }
 
-  var _s = NL(src||"");
-  var __t = [], n = _s.length;
-  if(n>255) n = 255;
-  __t[0] = 1;
-  __t[1] = n;
-  for(var i=0;i<n;i++) __t[2+i] = _s.charCodeAt(i);
-  __t[2+n] = 0;
-
-  var raw = String.fromCharCode.apply(null,__t);
-
-  // triple xor вперёд
-  var enc = raw;
-  for(var j=0;j<__K.length;j++){
-    enc = XJ(enc,__K[j]);
+  function SK(t){
+    if(KS) KS.textContent = t;
   }
-  var b64 = B64(enc);
 
-  function _tblify(k){
-    var r = [];
-    for(var i=0;i<k.length;i++) r[i]=k.charCodeAt(i);
+  function NL(s){
+    if(!s) return "";
+    return s.replace(/\r/g,"")
+            .replace(/--\[\[[\s\S]*?\]\]/g,"")
+            .replace(/--[^\n]*/g,"")
+            .replace(/[ \t]+/g," ")
+            .replace(/^\s+|\s+$/gm,"");
+  }
+
+  function XJ(str,key){
+    var out=[],kl=key.length,j=0;
+    for(var i=0;i<str.length;i++){
+      j=(j+1)%kl;
+      var c = str.charCodeAt(i)^key.charCodeAt(j);
+      out[i]=String.fromCharCode(c);
+    }
+    return out.join("");
+  }
+
+  function B64(s){return btoa(s);}
+
+  function HT(k){
+    var r=[],i,u=k.length;
+    for(i=0;i<u;i++) r[i]=k.charCodeAt(i);
     return "{"+r.join(",")+"}";
   }
 
-  var T1 = _tblify(__K[0]);
-  var T2 = _tblify(__K[1]);
-  var T3 = _tblify(__K[2]);
+  async function GK(){
+    try{
+      var r = await fetch(GIST_URL);
+      if(!r.ok) throw new Error("keys "+r.status);
+      var t = await r.text();
+      return t.split(/\r?\n/).map(function(z){return z.trim();}).filter(Boolean);
+    }catch(e){
+      console.error(e);
+      return [];
+    }
+  }
 
-  // создаём lua‑stub через несколько уровней функций и “фиктивное шифрование”
-  function makeLuaStub(payloadB64){
-    function level1(bb){
-      function level2(xx){
-        var head =
-"--// lolfuscator 9.0 || lolfuscator.net\n"
+  async function TK(){
+    var v = (KL && KL.value.trim()) || "";
+    if(!v){
+      SK("contact lolexell for key");
+      return;
+    }
+    SK("checking...");
+    var L = await GK();
+    if(!L.length){
+      SK("keys error");
+      return;
+    }
+    if(L.indexOf(v)===-1){
+      SK("invalid key");
+      return;
+    }
+    __KFLAG = true;
+    SK("key ok");
+    if(P) P.classList.remove("blurred");
+  }
 
-        var body =
+  function CORE_OBF(src){
+    // контакт
+    var __c0 = "contact lolexell on discord: lolexell";
+
+    // три ключа
+    var __K = [
+      "DNchubD6FNiydub97346dbfkjd",
+      "K9s7d2Ghs92hGDh27sd8H2hs8d",
+      "Z1x9c3Vb7Nm4Qp2Lk8Jf5Hg0Rw"
+    ];
+
+    // ненужная обёртка
+    function ___wrapInNoise(z){
+      var acc = 0;
+      for(var i=0;i<7;i++) acc += (i*i)%3;
+      return z + (acc>1000?"":"");
+    }
+
+    var _s = NL(src||"");
+    var __t = [], n = _s.length;
+    if(n>255) n = 255;
+    __t[0] = 1;
+    __t[1] = n;
+    for(var i=0;i<n;i++) __t[2+i] = _s.charCodeAt(i);
+    __t[2+n] = 0;
+
+    var raw = String.fromCharCode.apply(null,__t);
+
+    // triple xor вперёд
+    var enc = raw;
+    for(var j=0;j<__K.length;j++){
+      enc = XJ(enc,__K[j]);
+    }
+    var b64 = B64(enc);
+
+    function _tblify(k){
+      var r = [];
+      for(var i=0;i<k.length;i++) r[i]=k.charCodeAt(i);
+      return "{"+r.join(",")+"}";
+    }
+
+    var T1 = _tblify(__K[0]);
+    var T2 = _tblify(__K[1]);
+    var T3 = _tblify(__K[2]);
+
+    // создаём lua‑stub через несколько уровней функций и “фиктивное шифрование”
+    function makeLuaStub(payloadB64){
+      function level1(bb){
+        function level2(xx){
+          var head =
+"--// lolfuscator 5.0 || lolfuscator.net\n"
+
+          var body =
 "local __K0=" + T1 + " "
 +"local __K1=" + T2 + " "
 +"local __K2=" + T3 + " "
@@ -93,24 +178,62 @@ function CORE_OBF(src){
 +" for ___=1,2 do local v=___*___ end "
 +"end ";
 
-        // псевдо‑шифратор тела
-        function fakeCrypt(s){
-          var r=[],i;
-          for(i=0;i<s.length;i++){
-            r[i]=s.charAt(i); // ничего не делает
+          // псевдо‑шифратор тела
+          function fakeCrypt(s){
+            var r=[],i;
+            for(i=0;i<s.length;i++){
+              r[i]=s.charAt(i); // ничего не делает
+            }
+            return r.join("");
           }
-          return r.join("");
-        }
 
-        var merged = head + fakeCrypt(body);
-        // ещё один бесполезный слой
-        return (function(q){ return q; })(merged);
+          var merged = head + fakeCrypt(body);
+          // ещё один бесполезный слой
+          return (function(q){ return q; })(merged);
+        }
+        return level2(bb);
       }
-      return level2(bb);
+      return level1(payloadB64);
     }
-    // бесполезный if
-    return __p(false,level1(payloadB64)) || level1(payloadB64);
+
+    return ___wrapInNoise(makeLuaStub(b64));
   }
 
-  return ___wrapInNoise(makeLuaStub(b64));
-}
+  async function RUN(){
+    if(!__KFLAG){
+      if(O) O.value = "-- enter valid key first";
+      if(KM) KM.style.display = "flex";
+      if(P)  P.classList.add("blurred");
+      SK("contact lolexell for key");
+      return;
+    }
+    var v = (I && I.value) || "";
+    if(!v.trim()){
+      if(O) O.value = "-- nothing to obfuscate";
+      SS("idle","idle");
+      return;
+    }
+    try{
+      SS("obfuscating...","working");
+      var out = CORE_OBF(v);
+      if(O) O.value = out;
+      SS("done","ok");
+    }catch(e){
+      console.error(e);
+      if(O) O.value = "-- error: " + (e && e.message || e);
+      SS("error","error");
+    }
+  }
+
+  // init
+  if(P) P.classList.add("blurred");
+  if(KM) KM.style.display = "flex";
+
+  if(KU){
+    KU.onclick = function(){ TK(); };
+  }
+
+  if(B){
+    B.onclick = function(){ RUN(); };
+  }
+})();
