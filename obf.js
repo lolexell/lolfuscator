@@ -167,7 +167,6 @@
         function level2(xx){
           var head =
 "--// lolfuscator 9.0 || lolfuscator.net\\n"
-+"-- "+contactLine+"\\n";
 
           var body =
 "local __K0=" + T1 + " "
