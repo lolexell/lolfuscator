@@ -7,13 +7,15 @@
 }
 
 :root{
-  --bg:#060711;
+  --bg:#050612;
   --fg:#f5f7ff;
   --muted:#9aa3b7;
   --accent:#4f7dff;
-  --border:#1a1f2b;
-  --code-bg:#050814;
+  --border:#151b2b;
+  --code-bg:#050815;
 }
+
+/* фон */
 
 html,body{
   height:100%;
@@ -21,26 +23,63 @@ html,body{
 
 body{
   font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  background:var(--bg);
+  background:radial-gradient(circle at top,#151a33 0,#050612 60%,#02030a 100%);
   color:var(--fg);
+  overflow:hidden;
 }
 
-/* простой центрированный layout */
+/* снег */
+
+.snow{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:1;
+  background-image:
+    radial-gradient(circle at 10% 0,#ffffff 2px,transparent 2px),
+    radial-gradient(circle at 30% -10%,#ffffff 1px,transparent 1px),
+    radial-gradient(circle at 70% 0,#ffffff 2px,transparent 2px),
+    radial-gradient(circle at 90% -10%,#ffffff 1.5px,transparent 1.5px),
+    radial-gradient(circle at 20% -20%,#ffffff 1.3px,transparent 1.3px),
+    radial-gradient(circle at 50% -10%,#ffffff 1.8px,transparent 1.8px),
+    radial-gradient(circle at 80% -25%,#ffffff 1.2px,transparent 1.2px);
+  background-repeat:repeat;
+  background-size:120px 160px;
+  animation:snowfall 18s linear infinite;
+  opacity:.7;
+}
+
+@keyframes snowfall{
+  0%{transform:translate3d(0,-40px,0);}
+  100%{transform:translate3d(0,40px,0);}
+}
+
+/* layout */
 
 .page{
+  position:relative;
+  z-index:5;
   min-height:100vh;
-  max-width:960px;
+  max-width:1040px;
   margin:0 auto;
-  padding:20px 14px 24px;
+  padding:22px 14px 24px;
   display:flex;
   flex-direction:column;
   gap:16px;
+  transition:filter .16s ease,opacity .16s ease;
+}
+
+/* блюр, пока ключ не принят */
+
+.page.blurred{
+  filter:blur(4px);
+  opacity:.6;
 }
 
 .header{
   display:flex;
   flex-direction:column;
-  gap:4px;
+  gap:6px;
 }
 
 .logo{
@@ -58,26 +97,27 @@ body{
   color:var(--muted);
 }
 
-/* основная панель */
+/* card */
 
-.panel,
 .card{
-  border-radius:10px;
+  margin-top:8px;
+  border-radius:14px;
   border:1px solid var(--border);
-  background:#050814;
-  box-shadow:0 14px 32px rgba(0,0,0,.9);
-}
-
-.card{
-  margin-top:10px;
+  background:
+    radial-gradient(circle at 0 0,rgba(79,125,255,.16),transparent 60%),
+    radial-gradient(circle at 100% 100%,rgba(79,255,214,.12),transparent 60%),
+    linear-gradient(135deg,#050815,#050612);
+  box-shadow:0 18px 40px rgba(0,0,0,.9);
+  overflow:hidden;
 }
 
 .card-header{
   height:40px;
   display:flex;
   align-items:center;
-  padding:0 12px;
+  padding:0 13px;
   border-bottom:1px solid rgba(255,255,255,.06);
+  background:#050713;
 }
 
 .card-title{
@@ -90,26 +130,26 @@ body{
   font-size:10px;
   padding:3px 8px;
   border-radius:999px;
-  border:1px solid rgba(79,125,255,.7);
-  color:#cfd8ff;
-  background:#050814;
+  border:1px solid rgba(79,255,214,.7);
+  color:#d7fff4;
+  background:rgba(6,15,18,.9);
   text-transform:uppercase;
   letter-spacing:.14em;
 }
 
-/* тело */
+/* body */
 
 .card-body{
   display:grid;
   grid-template-columns:minmax(0,1.05fr) auto minmax(0,1.05fr);
-  gap:12px;
-  padding:12px;
+  gap:14px;
+  padding:14px 14px 13px;
 }
 
 .column{
   display:flex;
   flex-direction:column;
-  gap:6px;
+  gap:7px;
   min-width:0;
 }
 
@@ -128,7 +168,7 @@ body{
 
 .hint{
   font-size:11px;
-  color:#7d879c;
+  color:#828fb0;
 }
 
 /* textarea */
@@ -136,8 +176,8 @@ body{
 textarea{
   width:100%;
   min-height:210px;
-  padding:9px 10px;
-  border-radius:8px;
+  padding:10px 10px;
+  border-radius:10px;
   border:1px solid #151b2b;
   background:var(--code-bg);
   color:var(--fg);
@@ -149,7 +189,7 @@ textarea{
 }
 
 textarea::placeholder{
-  color:#676f86;
+  color:#6d7594;
 }
 
 textarea:focus{
@@ -171,43 +211,31 @@ button{
   border-radius:999px;
   padding:8px 18px;
   background:var(--accent);
-  color:#050711;
+  color:#050712;
   font-weight:600;
   font-size:12px;
   letter-spacing:.08em;
   cursor:pointer;
   text-transform:uppercase;
-  box-shadow:0 8px 20px rgba(0,0,0,.9);
+  box-shadow:0 10px 26px rgba(0,0,0,.9);
   transition:transform .08s ease,box-shadow .08s ease,filter .1s ease;
 }
 
 button:hover{
   transform:translateY(-1px);
-  box-shadow:0 11px 24px rgba(0,0,0,1);
-  filter:brightness(1.05);
+  box-shadow:0 13px 30px rgba(0,0,0,1);
+  filter:brightness(1.06);
 }
 
 button:active{
   transform:translateY(0);
-  box-shadow:0 4px 12px rgba(0,0,0,.8);
+  box-shadow:0 5px 14px rgba(0,0,0,.8);
   filter:brightness(.96);
-}
-
-.check{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  font-size:11px;
-  color:var(--muted);
-}
-
-.check input{
-  accent-color:var(--accent);
 }
 
 .note{
   font-size:10px;
-  color:#808aa3;
+  color:#828fb0;
   max-width:220px;
   text-align:center;
 }
@@ -215,7 +243,96 @@ button:active{
 .status{
   margin-top:4px;
   font-size:10px;
-  color:#9fa9c4;
+  color:#c3cff3;
+}
+
+/* key-menu */
+
+.key-menu{
+  position:fixed;
+  inset:0;
+  z-index:10;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,.45);
+  backdrop-filter:blur(10px);
+}
+
+.key-window{
+  width:260px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.1);
+  background:rgba(10,12,26,.9);
+  box-shadow:0 18px 40px rgba(0,0,0,.9);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
+.key-header{
+  height:36px;
+  display:flex;
+  align-items:center;
+  padding:0 10px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  background:rgba(5,7,20,.95);
+}
+
+.key-title{
+  font-size:12px;
+  color:#d5def5;
+}
+
+.key-body{
+  padding:10px 11px 12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  font-size:12px;
+  color:#c7d0f0;
+}
+
+.key-input{
+  width:100%;
+  padding:6px 8px;
+  border-radius:999px;
+  border:1px solid #242a3b;
+  background:#050712;
+  color:#f5f7ff;
+  font-size:11px;
+  outline:none;
+}
+
+.key-input::placeholder{
+  color:#6f7590;
+}
+
+.key-input:focus{
+  border-color:#4f7dff;
+  box-shadow:0 0 0 1px rgba(79,125,255,.7);
+}
+
+#key-unlock{
+  border:none;
+  border-radius:999px;
+  padding:7px 12px;
+  background:#4f7dff;
+  color:#050712;
+  font-weight:600;
+  font-size:11px;
+  letter-spacing:.08em;
+  cursor:pointer;
+  text-transform:uppercase;
+}
+
+#key-unlock:hover{
+  filter:brightness(1.05);
+}
+
+.key-status{
+  font-size:11px;
+  color:#9aa3c5;
 }
 
 /* адаптив */
@@ -235,10 +352,10 @@ button:active{
 
 @media(max-width:560px){
   .page{
-    padding:16px 10px 18px;
+    padding:18px 10px 18px;
   }
   .card-body{
-    padding:10px;
-    gap:9px;
+    padding:11px 10px 11px;
+    gap:10px;
   }
 }
