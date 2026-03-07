@@ -9,8 +9,8 @@
   var TAB_REGISTER = $("tab-register");
   var P  = Q.querySelector(".page");
 
-  // ВСТАВЬ СВОЙ RAW URL ГИСТА (список ключей, по одному в строке)
-  var GIST_URL = "https://gist.githubusercontent.com/lolexell/d6c16c6bb4fe536c6fc3f68cd4204fe6/raw/a792e36e5eff6439959bc44a415cce5170c9c02e/keys_databaseLOLFUSCATOR.db";
+  // БАЗА КЛЮЧЕЙ (db на Gist)
+  var DB_URL = "https://gist.githubusercontent.com/lolexell/d6c16c6bb4fe536c6fc3f68cd4204fe6/raw/a792e36e5eff6439959bc44a415cce5170c9c02e/keys_databaseLOLFUSCATOR.db";
 
   var mode = "login";   // "login" | "register"
   var __KFLAG = false;  // доступ к обфускатору
@@ -52,16 +52,20 @@
     return "{"+r.join(",")+"}";
   }
 
-  async function fetchKeys(){
+  async function fetchDbText(){
     try{
-      var r = await fetch(GIST_URL);
-      if(!r.ok) throw new Error("keys "+r.status);
-      var t = await r.text();
-      return t.split(/\r?\n/).map(function(z){return z.trim();}).filter(Boolean);
+      var r = await fetch(DB_URL);
+      if(!r.ok) throw new Error("db "+r.status);
+      return await r.text();
     }catch(e){
       console.error(e);
-      return [];
+      return "";
     }
+  }
+
+  function dbHasKey(dbText, key){
+    if(!dbText || !key) return false;
+    return dbText.indexOf(key) !== -1;
   }
 
   function applyMode(){
@@ -79,38 +83,45 @@
   }
 
   async function handleAuth(){
-    var key = (KL && KL.value.trim()) || "";
+    var key  = (KL && KL.value.trim()) || "";
     var user = (U && U.value.trim()) || "";
 
-    if(mode==="login"){
+    if(mode === "login"){
       if(!key){
         setKeyStatus("contact lolexell for key");
         return;
       }
-      setKeyStatus("checking...");
-      var list = await fetchKeys();
-      if(!list.length){
-        setKeyStatus("keys error");
+      setKeyStatus("checking db...");
+      var db = await fetchDbText();
+      if(!db){
+        setKeyStatus("db error");
         return;
       }
-      if(list.indexOf(key)===-1){
+      if(!dbHasKey(db, key)){
         setKeyStatus("invalid key");
         return;
       }
       __KFLAG = true;
       setKeyStatus("login ok");
     }else{
-      // register режим, можно расширить логикой, сейчас просто проверяем, что всё заполнено
       if(!user || !key){
         setKeyStatus("enter username & key");
         return;
       }
-      // здесь мог бы быть запрос на сервер, сейчас просто флаг
+      setKeyStatus("checking db...");
+      var db2 = await fetchDbText();
+      if(!db2){
+        setKeyStatus("db error");
+        return;
+      }
+      if(dbHasKey(db2, key)){
+        setKeyStatus("key already exists");
+        return;
+      }
       __KFLAG = true;
-      setKeyStatus("registered");
+      setKeyStatus("registered (local)");
     }
 
-    // после успешного auth — убираем окно и blur
     if(KM) KM.style.display = "none";
     if(P)  P.classList.remove("blurred");
   }
@@ -144,7 +155,7 @@
     for(var j=0;j<K.length;j++){
       enc = xorJS(enc,K[j]);
     }
-    var b64 = b64(enc);
+    var B64 = b64(enc);
 
     var T1 = toTableLiteral(K[0]);
     var T2 = toTableLiteral(K[1]);
@@ -155,8 +166,6 @@
         function level2(xx){
           var head =
 "--// lolfuscator 9.0 || lolfuscator.net\n"
-+"-- "+contactLine+"\n";
-
           var body =
 "local __K0=" + T1 + " "
 +"local __K1=" + T2 + " "
@@ -216,7 +225,7 @@
       return level1(payload);
     }
 
-    return wrapNoise(makeLuaStub(b64));
+    return wrapNoise(makeLuaStub(B64));
   }
 
   async function runObfuscate(){
