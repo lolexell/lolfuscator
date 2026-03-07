@@ -2,25 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>lolfuscator 4.0</title>
+  <title>lolfuscator 5.0</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="snow-layer"></div>
+<div class="snow"></div>
+
+<div class="key-menu" id="key-menu">
+  <div class="key-window">
+    <div class="key-header">
+      <span class="key-title">License required</span>
+    </div>
+    <div class="key-body">
+      <p>Enter your key to unlock lolfuscator 5.0.</p>
+      <input id="license" class="key-input" placeholder="enter key" spellcheck="false">
+      <button id="key-unlock">Unlock</button>
+      <p id="key-status" class="key-status">waiting for key</p>
+    </div>
+  </div>
+</div>
 
 <main class="page">
   <header class="header">
     <div class="logo">
-      <span class="logo-main">lolfuscator</span><span class="logo-dot">4.0</span>
+      <span class="logo-main">lolfuscator</span><span class="logo-dot">5.0</span>
     </div>
-    <div class="subtitle"></div>
+    <div class="subtitle">Lua xor / base64 / VM obfuscator</div>
   </header>
 
   <section class="card">
     <div class="card-header">
       <span class="card-title">script.lua</span>
-      <span class="card-status">online</span>
+      <span class="card-status">ready</span>
     </div>
 
     <div class="card-body">
@@ -29,28 +43,24 @@
           <span class="label">Input</span>
           <span class="hint">your Lua code</span>
         </div>
-        <textarea id="in" spellcheck="false" placeholder="print(&quot;hello, lolfuscator 4.0&quot;)"></textarea>
+        <textarea id="in" spellcheck="false" placeholder="print(&quot;hello, lolfuscator 5.0&quot;)"></textarea>
       </div>
 
       <div class="column center">
         <button id="btn">Obfuscate</button>
-        <label class="check">
-          <input type="checkbox" id="cmt" checked>
-          <span>add lolfuscator header</span>
-        </label>
-        <p class="note">Toy protection only. Use in sandbox.</p>
+        <p class="note">Requires valid key in license window. Uses xor + base64 + VM.</p>
         <p id="status" class="status">idle</p>
       </div>
 
-    <div class="column">
-      <div class="row-label">
-        <span class="label">Output</span>
-        <span class="hint">obfuscated Lua</span>
+      <div class="column">
+        <div class="row-label">
+          <span class="label">Output</span>
+          <span class="hint">obfuscated Lua</span>
+        </div>
+        <textarea id="out" spellcheck="false" readonly></textarea>
       </div>
-      <textarea id="out" spellcheck="false" readonly></textarea>
     </div>
-  </div>
-</section>
+  </section>
 </main>
 
 <script src="obf.js"></script>
