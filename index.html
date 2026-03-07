@@ -7,6 +7,46 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div class="snow"></div>
+<div class="snowflakes" aria-hidden="true">
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+  <div class="snowflake">•</div>
+</div>
+
 <div class="key-menu" id="key-menu">
   <div class="key-window">
     <div class="key-header">
@@ -18,7 +58,7 @@
     </div>
     <div class="key-body">
       <p class="key-hint">contact lolexell for key</p>
-      <input id="license" class="key-input" placeholder="key" spellcheck="false">
+      <input id="license" class="key-input" placeholder="key (LOLF-XXXX-XXXX-XXXX)" spellcheck="false">
       <input id="username" class="key-input" placeholder="username (for register)" spellcheck="false">
       <button id="key-unlock">Continue</button>
       <p id="key-status" class="key-status">waiting for key</p>
@@ -27,7 +67,6 @@
 </div>
 
 <main class="page">
-  <div id="dashboard"></div>
   <header class="header">
     <div class="logo">
       <span class="logo-main">lolfuscator</span><span class="logo-dot">9.0</span>
@@ -35,8 +74,15 @@
     <div class="subtitle">Lua triple xor / base64 / VM obfuscator</div>
   </header>
 
-  <section class="card">
-    <div class="card-header glass">
+  <div id="dashboard"></div>
+
+  <section class="card" id="obf-window">
+    <div class="card-header glass" id="obf-header">
+      <div class="win-dots">
+        <span class="dot dot-red"></span>
+        <span class="dot dot-yellow"></span>
+        <span class="dot dot-green"></span>
+      </div>
       <span class="card-title">script.lua</span>
       <span class="card-status">ready</span>
     </div>
