@@ -1,27 +1,31 @@
 (function(){
   var Q = document;
-  function _(x){return Q.getElementById(x);}
+  function $(x){return Q.getElementById(x);}
 
-  var I = _("in"), O = _("out"), B = _("btn"), S = _("status");
-  var KM = _("key-menu"), KU = _("key-unlock"), KL = _("license"), KS = _("key-status");
-  var P = Q.querySelector(".page");
+  var I  = $("in"), O = $("out"), B = $("btn"), S = $("status");
+  var KM = $("key-menu"), KU = $("key-unlock"), KL = $("license"), KS = $("key-status");
+  var U  = $("username");
+  var TAB_LOGIN    = $("tab-login");
+  var TAB_REGISTER = $("tab-register");
+  var P  = Q.querySelector(".page");
 
-  // ВСТАВЬ СВОЙ RAW URL ГИСТА
+  // ВСТАВЬ СВОЙ RAW URL ГИСТА (список ключей, по одному в строке)
   var GIST_URL = "https://gist.githubusercontent.com/lolexell/d6c16c6bb4fe536c6fc3f68cd4204fe6/raw/a792e36e5eff6439959bc44a415cce5170c9c02e/keys_databaseLOLFUSCATOR.db";
 
-  var __KFLAG = false;
+  var mode = "login";   // "login" | "register"
+  var __KFLAG = false;  // доступ к обфускатору
 
-  function SS(t,c){
+  function setStatus(t,c){
     if(!S) return;
     S.textContent = t;
     S.className = "status "+(c||"");
   }
 
-  function SK(t){
+  function setKeyStatus(t){
     if(KS) KS.textContent = t;
   }
 
-  function NL(s){
+  function normalizeLua(s){
     if(!s) return "";
     return s.replace(/\r/g,"")
             .replace(/--\[\[[\s\S]*?\]\]/g,"")
@@ -30,7 +34,7 @@
             .replace(/^\s+|\s+$/gm,"");
   }
 
-  function XJ(str,key){
+  function xorJS(str,key){
     var out=[],kl=key.length,j=0;
     for(var i=0;i<str.length;i++){
       j=(j+1)%kl;
@@ -40,15 +44,15 @@
     return out.join("");
   }
 
-  function B64(s){return btoa(s);}
+  function b64(s){return btoa(s);}
 
-  function HT(k){
+  function toTableLiteral(k){
     var r=[],i,u=k.length;
     for(i=0;i<u;i++) r[i]=k.charCodeAt(i);
     return "{"+r.join(",")+"}";
   }
 
-  async function GK(){
+  async function fetchKeys(){
     try{
       var r = await fetch(GIST_URL);
       if(!r.ok) throw new Error("keys "+r.status);
@@ -60,78 +64,98 @@
     }
   }
 
-  async function TK(){
-    var v = (KL && KL.value.trim()) || "";
-    if(!v){
-      SK("contact lolexell for key");
-      return;
+  function applyMode(){
+    if(mode==="login"){
+      if(TAB_LOGIN)    TAB_LOGIN.classList.add("key-tab-active");
+      if(TAB_REGISTER) TAB_REGISTER.classList.remove("key-tab-active");
+      if(U) U.style.display = "none";
+      setKeyStatus("waiting for key");
+    }else{
+      if(TAB_REGISTER) TAB_REGISTER.classList.add("key-tab-active");
+      if(TAB_LOGIN)    TAB_LOGIN.classList.remove("key-tab-active");
+      if(U) U.style.display = "block";
+      setKeyStatus("register: contact lolexell for key");
     }
-    SK("checking...");
-    var L = await GK();
-    if(!L.length){
-      SK("keys error");
-      return;
+  }
+
+  async function handleAuth(){
+    var key = (KL && KL.value.trim()) || "";
+    var user = (U && U.value.trim()) || "";
+
+    if(mode==="login"){
+      if(!key){
+        setKeyStatus("contact lolexell for key");
+        return;
+      }
+      setKeyStatus("checking...");
+      var list = await fetchKeys();
+      if(!list.length){
+        setKeyStatus("keys error");
+        return;
+      }
+      if(list.indexOf(key)===-1){
+        setKeyStatus("invalid key");
+        return;
+      }
+      __KFLAG = true;
+      setKeyStatus("login ok");
+    }else{
+      // register режим, можно расширить логикой, сейчас просто проверяем, что всё заполнено
+      if(!user || !key){
+        setKeyStatus("enter username & key");
+        return;
+      }
+      // здесь мог бы быть запрос на сервер, сейчас просто флаг
+      __KFLAG = true;
+      setKeyStatus("registered");
     }
-    if(L.indexOf(v)===-1){
-      SK("invalid key");
-      return;
-    }
-    __KFLAG = true;
-    SK("key ok");
-    if(P) P.classList.remove("blurred");
+
+    // после успешного auth — убираем окно и blur
+    if(KM) KM.style.display = "none";
+    if(P)  P.classList.remove("blurred");
   }
 
   function CORE_OBF(src){
-    // контакт
-    var __c0 = "contact lolexell on discord: lolexell";
+    var contactLine = "contact lolexell on discord: lolexell";
 
-    // три ключа
-    var __K = [
+    var K = [
       "DNchubD6FNiydub97346dbfkjd",
       "K9s7d2Ghs92hGDh27sd8H2hs8d",
       "Z1x9c3Vb7Nm4Qp2Lk8Jf5Hg0Rw"
     ];
 
-    // ненужная обёртка
-    function ___wrapInNoise(z){
+    function wrapNoise(z){
       var acc = 0;
       for(var i=0;i<7;i++) acc += (i*i)%3;
       return z + (acc>1000?"":"");
     }
 
-    var _s = NL(src||"");
-    var __t = [], n = _s.length;
+    var s = normalizeLua(src||"");
+    var t = [], n = s.length;
     if(n>255) n = 255;
-    __t[0] = 1;
-    __t[1] = n;
-    for(var i=0;i<n;i++) __t[2+i] = _s.charCodeAt(i);
-    __t[2+n] = 0;
+    t[0] = 1;
+    t[1] = n;
+    for(var i=0;i<n;i++) t[2+i] = s.charCodeAt(i);
+    t[2+n] = 0;
 
-    var raw = String.fromCharCode.apply(null,__t);
+    var raw = String.fromCharCode.apply(null,t);
 
-    // triple xor вперёд
     var enc = raw;
-    for(var j=0;j<__K.length;j++){
-      enc = XJ(enc,__K[j]);
+    for(var j=0;j<K.length;j++){
+      enc = xorJS(enc,K[j]);
     }
-    var b64 = B64(enc);
+    var b64 = b64(enc);
 
-    function _tblify(k){
-      var r = [];
-      for(var i=0;i<k.length;i++) r[i]=k.charCodeAt(i);
-      return "{"+r.join(",")+"}";
-    }
+    var T1 = toTableLiteral(K[0]);
+    var T2 = toTableLiteral(K[1]);
+    var T3 = toTableLiteral(K[2]);
 
-    var T1 = _tblify(__K[0]);
-    var T2 = _tblify(__K[1]);
-    var T3 = _tblify(__K[2]);
-
-    // создаём lua‑stub через несколько уровней функций и “фиктивное шифрование”
-    function makeLuaStub(payloadB64){
+    function makeLuaStub(payload){
       function level1(bb){
         function level2(xx){
           var head =
-"--// lolfuscator 5.0 || lolfuscator.net\n"
+"--// lolfuscator 9.0 || lolfuscator.net\n"
++"-- "+contactLine+"\n";
 
           var body =
 "local __K0=" + T1 + " "
@@ -178,62 +202,73 @@
 +" for ___=1,2 do local v=___*___ end "
 +"end ";
 
-          // псевдо‑шифратор тела
           function fakeCrypt(s){
             var r=[],i;
-            for(i=0;i<s.length;i++){
-              r[i]=s.charAt(i); // ничего не делает
-            }
+            for(i=0;i<s.length;i++) r[i]=s.charAt(i);
             return r.join("");
           }
 
           var merged = head + fakeCrypt(body);
-          // ещё один бесполезный слой
           return (function(q){ return q; })(merged);
         }
         return level2(bb);
       }
-      return level1(payloadB64);
+      return level1(payload);
     }
 
-    return ___wrapInNoise(makeLuaStub(b64));
+    return wrapNoise(makeLuaStub(b64));
   }
 
-  async function RUN(){
+  async function runObfuscate(){
     if(!__KFLAG){
       if(O) O.value = "-- enter valid key first";
       if(KM) KM.style.display = "flex";
       if(P)  P.classList.add("blurred");
-      SK("contact lolexell for key");
+      setKeyStatus(mode==="login" ? "contact lolexell for key" : "enter username & key");
       return;
     }
     var v = (I && I.value) || "";
     if(!v.trim()){
       if(O) O.value = "-- nothing to obfuscate";
-      SS("idle","idle");
+      setStatus("idle","idle");
       return;
     }
     try{
-      SS("obfuscating...","working");
+      setStatus("obfuscating...","working");
       var out = CORE_OBF(v);
       if(O) O.value = out;
-      SS("done","ok");
+      setStatus("done","ok");
     }catch(e){
       console.error(e);
       if(O) O.value = "-- error: " + (e && e.message || e);
-      SS("error","error");
+      setStatus("error","error");
     }
   }
 
   // init
   if(P) P.classList.add("blurred");
   if(KM) KM.style.display = "flex";
+  applyMode();
 
   if(KU){
-    KU.onclick = function(){ TK(); };
+    KU.onclick = function(){ handleAuth(); };
+  }
+
+  if(TAB_LOGIN){
+    TAB_LOGIN.onclick = function(){
+      mode = "login";
+      applyMode();
+    };
+  }
+
+  if(TAB_REGISTER){
+    TAB_REGISTER.onclick = function(){
+      mode = "register";
+      applyMode();
+    };
   }
 
   if(B){
-    B.onclick = function(){ RUN(); };
+    B.onclick = function(){ runObfuscate(); };
   }
 })();
