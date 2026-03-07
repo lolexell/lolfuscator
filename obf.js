@@ -9,11 +9,16 @@
   var TAB_REGISTER = $("tab-register");
   var P  = Q.querySelector(".page");
 
+  // простой account dashboard (добавь в index.html <div id="dashboard"></div> где-то под header)
+  var DASH = $("dashboard");
+
   // БАЗА КЛЮЧЕЙ (db на Gist)
-  var DB_URL = "https://gist.githubusercontent.com/lolexell/d6c16c6bb4fe536c6fc3f68cd4204fe6/raw/a792e36e5eff6439959bc44a415cce5170c9c02e/keys_databaseLOLFUSCATOR.db";
+  var DB_URL = "https://gist.githubusercontent.com/lolexell/d6c16c6bb4fe536c6fc3f68cd4204fe6/raw/e412e60149f60505c35785bc636de459eabf5046/keys_databaseLOLFUSCATOR.db";
 
   var mode = "login";   // "login" | "register"
   var __KFLAG = false;  // доступ к обфускатору
+  var currentUser = null;
+  var currentKey  = null;
 
   function setStatus(t,c){
     if(!S) return;
@@ -65,7 +70,8 @@
 
   function dbHasKey(dbText, key){
     if(!dbText || !key) return false;
-    return dbText.indexOf(key) !== -1;
+    // точное вхождение (ключ в верхнем регистре)
+    return dbText.toUpperCase().indexOf(key) !== -1;
   }
 
   // формат ключа: LOLF-XXXX-XXXX-XXXX (A-Z0-9)
@@ -85,6 +91,20 @@
       if(U) U.style.display = "block";
       setKeyStatus("register: contact lolexell for key");
     }
+  }
+
+  function renderDashboard(){
+    if(!DASH || !__KFLAG) return;
+    var u = currentUser || "anonymous";
+    var k = currentKey  || "unknown";
+    DASH.innerHTML =
+      "<div class=\"dash-card\">" +
+        "<div class=\"dash-title\">Account dashboard</div>" +
+        "<div class=\"dash-row\"><span>User:</span><code>"+u+"</code></div>" +
+        "<div class=\"dash-row\"><span>Key:</span><code>"+k+"</code></div>" +
+        "<div class=\"dash-row\"><span>Plan:</span><code>lolfuscator 9.0</code></div>" +
+        "<div class=\"dash-row\"><span>Status:</span><code>active</code></div>" +
+      "</div>";
   }
 
   async function handleAuth(){
@@ -112,6 +132,8 @@
         return;
       }
       __KFLAG = true;
+      currentKey  = key;
+      currentUser = user || "user";
       setKeyStatus("login ok");
     }else{
       if(!user || !key){
@@ -136,14 +158,16 @@
         setKeyStatus("key already exists in db");
         return;
       }
-
-      // нет сервера — просто локально даём доступ
+      // нет сервера чтобы реально записать в базу, поэтому просто локально помечаем как залогиненный
       __KFLAG = true;
+      currentKey  = key;
+      currentUser = user;
       setKeyStatus("registered (local only)");
     }
 
     if(KM) KM.style.display = "none";
     if(P)  P.classList.remove("blurred");
+    renderDashboard();
   }
 
   function CORE_OBF(src){
@@ -206,6 +230,8 @@
 +"_d=__xor(_d,_K1) "
 +"_d=__xor(_d,_K0) "
 +"local __bc={}for i=1,#_d do __bc[i]=_d:byte(i)end "
++"local __sum=0 for i=1,#__bc do __sum=__sum+__bc[i] end "
++"if (__sum % 13) ~= 7 then return error('tamper detected') end "
 +"local __S,___sp={},0 "
 +"local function __push(v)___sp=___sp+1 __S[___sp]=v end "
 +"local function __pop()local v=__S[___sp] __S[___sp]=nil ___sp=___sp-1 return v end "
