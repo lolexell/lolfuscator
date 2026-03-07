@@ -7,13 +7,13 @@
 }
 
 :root{
-  --bg:#06080c;
-  --fg:#f5f7fb;
-  --accent:#4f7dff;
-  --accent-soft:#2c3a5c;
-  --border:#151923;
-  --muted:#9aa3b7;
-  --code-bg:#05070c;
+  --bg:#050712;
+  --fg:#f5f7ff;
+  --muted:#a2acc4;
+  --accent:#6ab7ff;
+  --accent-soft:#283351;
+  --border:#151b2b;
+  --code-bg:#050817;
 }
 
 /* базовый фон */
@@ -24,136 +24,129 @@ html,body{
 
 body{
   font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  background:radial-gradient(circle at top,#181c30 0,#05060a 60%,#020308 100%);
+  background:radial-gradient(circle at top,#151a33 0,#050712 60%,#02030a 100%);
   color:var(--fg);
+  overflow:hidden;
 }
 
-/* задний фон */
+/* снег поверх всего */
 
-.bg{
+.snow-layer{
+  pointer-events:none;
   position:fixed;
   inset:0;
-  z-index:-1;
-  pointer-events:none;
-}
-
-.bg-gradient{
-  position:absolute;
-  inset:0;
-  background:
-    radial-gradient(circle at 10% 0,rgba(79,125,255,.35),transparent 55%),
-    radial-gradient(circle at 90% 90%,rgba(87,216,255,.3),transparent 55%);
-  opacity:.9;
-}
-
-.bg-grid{
-  position:absolute;
-  inset:-1px;
+  z-index:5;
   background-image:
-    linear-gradient(rgba(200,210,255,.04) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(200,210,255,.04) 1px,transparent 1px);
-  background-size:36px 36px;
-  opacity:.18;
+    radial-gradient(circle at 10% 0,#ffffff 2px,transparent 2px),
+    radial-gradient(circle at 30% -10%,#ffffff 1px,transparent 1px),
+    radial-gradient(circle at 70% 0,#ffffff 2px,transparent 2px),
+    radial-gradient(circle at 90% -10%,#ffffff 1.5px,transparent 1.5px),
+    radial-gradient(circle at 20% -20%,#ffffff 1.3px,transparent 1.3px),
+    radial-gradient(circle at 50% -10%,#ffffff 1.8px,transparent 1.8px),
+    radial-gradient(circle at 80% -25%,#ffffff 1.2px,transparent 1.2px);
+  background-repeat:repeat;
+  background-size:120px 160px;
+  animation:snowfall 18s linear infinite;
+  opacity:.65;
 }
 
-/* layout */
+@keyframes snowfall{
+  0%{transform:translate3d(0,-40px,0);}
+  100%{transform:translate3d(0,40px,0);}
+}
 
-.shell{
+/* макет страницы */
+
+.page{
+  position:relative;
+  z-index:10;
   min-height:100vh;
   max-width:1040px;
   margin:0 auto;
-  padding:20px 14px 20px;
+  padding:22px 14px 24px;
   display:flex;
   flex-direction:column;
-  gap:12px;
+  gap:16px;
 }
 
-.top{
+.header{
   display:flex;
   flex-direction:column;
   gap:6px;
 }
 
-.brand{
+.logo{
   font-weight:700;
-  letter-spacing:.14em;
+  letter-spacing:.18em;
   text-transform:uppercase;
   font-size:18px;
 }
 
-.brand-main{color:#ffffff;}
-.brand-dot{color:var(--accent);}
+.logo-main{color:#ffffff;}
+.logo-dot{color:var(--accent);margin-left:6px;}
 
 .subtitle{
   font-size:12px;
   color:var(--muted);
 }
 
-/* panel */
+/* основная карточка */
 
-.panel{
-  margin-top:6px;
-  border-radius:14px;
+.card{
+  margin-top:8px;
+  border-radius:16px;
   border:1px solid var(--border);
-  background:linear-gradient(135deg,#070915,#05060e);
-  box-shadow:0 18px 40px rgba(0,0,0,.85);
+  background:
+    radial-gradient(circle at 0 0,rgba(106,183,255,.12),transparent 60%),
+    radial-gradient(circle at 100% 100%,rgba(114,137,255,.14),transparent 60%),
+    linear-gradient(135deg,#050816,#050612);
+  box-shadow:0 22px 45px rgba(0,0,0,.9);
   overflow:hidden;
 }
 
-.panel-header{
-  height:40px;
+.card-header{
+  height:42px;
   display:flex;
   align-items:center;
-  gap:8px;
-  padding:0 12px;
-  border-bottom:1px solid rgba(255,255,255,.04);
-  background:#050612;
+  padding:0 14px;
+  border-bottom:1px solid rgba(255,255,255,.05);
+  background:#050713;
 }
 
-.pill{
-  width:9px;
-  height:9px;
-  border-radius:999px;
-}
-.pill-green{background:#3adb76;}
-.pill-yellow{background:#ffdd57;}
-.pill-red{background:#ff5c5c;}
-
-.panel-title{
+.card-title{
   font-size:12px;
   color:var(--muted);
-  margin-left:4px;
 }
 
-.panel-badge{
+.card-status{
   margin-left:auto;
   font-size:10px;
   padding:3px 8px;
   border-radius:999px;
-  border:1px solid rgba(79,125,255,.7);
-  color:#cfd8ff;
-  background:rgba(10,14,30,.9);
+  border:1px solid rgba(106,183,255,.7);
+  color:#d8e7ff;
+  background:rgba(7,11,30,.9);
   text-transform:uppercase;
   letter-spacing:.14em;
 }
 
-/* body */
+/* тело карточки */
 
-.panel-body{
+.card-body{
   display:grid;
   grid-template-columns:minmax(0,1.05fr) auto minmax(0,1.05fr);
   gap:14px;
-  padding:13px 13px 12px;
+  padding:14px 14px 13px;
 }
 
-.col{
+.column{
   display:flex;
   flex-direction:column;
-  gap:6px;
+  gap:7px;
   min-width:0;
 }
 
-.label-row{
+.row-label{
   display:flex;
   justify-content:space-between;
   align-items:center;
@@ -168,7 +161,7 @@ body{
 
 .hint{
   font-size:11px;
-  color:#828ea6;
+  color:#8591ad;
 }
 
 /* textarea */
@@ -176,9 +169,9 @@ body{
 textarea{
   width:100%;
   min-height:210px;
-  padding:9px 10px;
+  padding:10px 10px;
   border-radius:10px;
-  border:1px solid #131722;
+  border:1px solid #151b2b;
   background:var(--code-bg);
   color:var(--fg);
   font-family:SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
@@ -189,29 +182,29 @@ textarea{
 }
 
 textarea::placeholder{
-  color:#6b7490;
+  color:#6f7794;
 }
 
 textarea:focus{
   border-color:var(--accent);
-  box-shadow:0 0 0 1px rgba(79,125,255,.7);
+  box-shadow:0 0 0 1px rgba(106,183,255,.7);
 }
 
-/* center col */
+/* центральная колонка */
 
-.col-center{
+.center{
   align-items:center;
   justify-content:center;
   padding:0 4px;
-  gap:8px;
+  gap:9px;
 }
 
 button{
   border:none;
   border-radius:999px;
-  padding:9px 18px;
+  padding:9px 20px;
   background:var(--accent);
-  color:#05060a;
+  color:#050712;
   font-weight:600;
   font-size:12px;
   letter-spacing:.08em;
@@ -224,7 +217,7 @@ button{
 button:hover{
   transform:translateY(-1px);
   box-shadow:0 13px 30px rgba(0,0,0,1);
-  filter:brightness(1.05);
+  filter:brightness(1.06);
 }
 
 button:active{
@@ -247,33 +240,24 @@ button:active{
 
 .note{
   font-size:10px;
-  color:#808aa3;
-  max-width:210px;
+  color:#828fb0;
+  max-width:220px;
   text-align:center;
 }
 
 .status{
   margin-top:4px;
   font-size:10px;
-  color:#aab5d4;
+  color:#c3cff3;
 }
 
-/* footer */
-
-.foot{
-  margin-top:8px;
-  font-size:11px;
-  color:#7f8aa4;
-  text-align:right;
-}
-
-/* responsive */
+/* адаптив */
 
 @media(max-width:880px){
-  .panel-body{
+  .card-body{
     grid-template-columns:minmax(0,1fr);
   }
-  .col-center{
+  .center{
     flex-direction:row;
     justify-content:flex-start;
   }
@@ -283,11 +267,11 @@ button:active{
 }
 
 @media(max-width:560px){
-  .shell{
-    padding:16px 10px 16px;
+  .page{
+    padding:18px 10px 18px;
   }
-  .panel-body{
-    padding:10px 9px 10px;
+  .card-body{
+    padding:11px 10px 11px;
     gap:10px;
   }
 }
