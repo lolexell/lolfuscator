@@ -68,6 +68,11 @@
     return dbText.indexOf(key) !== -1;
   }
 
+  // формат ключа: LOLF-XXXX-XXXX-XXXX (A-Z0-9)
+  function isValidKeyFormat(key){
+    return /^LOLF-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(key.toUpperCase());
+  }
+
   function applyMode(){
     if(mode==="login"){
       if(TAB_LOGIN)    TAB_LOGIN.classList.add("key-tab-active");
@@ -83,12 +88,17 @@
   }
 
   async function handleAuth(){
-    var key  = (KL && KL.value.trim()) || "";
-    var user = (U && U.value.trim()) || "";
+    var rawKey = (KL && KL.value.trim()) || "";
+    var key    = rawKey.toUpperCase();
+    var user   = (U && U.value.trim()) || "";
 
     if(mode === "login"){
       if(!key){
         setKeyStatus("contact lolexell for key");
+        return;
+      }
+      if(!isValidKeyFormat(key)){
+        setKeyStatus("invalid format (LOLF-XXXX-XXXX-XXXX)");
         return;
       }
       setKeyStatus("checking db...");
@@ -98,7 +108,7 @@
         return;
       }
       if(!dbHasKey(db, key)){
-        setKeyStatus("invalid key");
+        setKeyStatus("key not found");
         return;
       }
       __KFLAG = true;
@@ -108,6 +118,14 @@
         setKeyStatus("enter username & key");
         return;
       }
+      if(user.length < 3){
+        setKeyStatus("username too short");
+        return;
+      }
+      if(!isValidKeyFormat(key)){
+        setKeyStatus("invalid format (LOLF-XXXX-XXXX-XXXX)");
+        return;
+      }
       setKeyStatus("checking db...");
       var db2 = await fetchDbText();
       if(!db2){
@@ -115,11 +133,13 @@
         return;
       }
       if(dbHasKey(db2, key)){
-        setKeyStatus("key already exists");
+        setKeyStatus("key already exists in db");
         return;
       }
+
+      // нет сервера — просто локально даём доступ
       __KFLAG = true;
-      setKeyStatus("registered (local)");
+      setKeyStatus("registered (local only)");
     }
 
     if(KM) KM.style.display = "none";
@@ -166,6 +186,8 @@
         function level2(xx){
           var head =
 "--// lolfuscator 9.0 || lolfuscator.net\n"
++"-- "+contactLine+"\n";
+
           var body =
 "local __K0=" + T1 + " "
 +"local __K1=" + T2 + " "
