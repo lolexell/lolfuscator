@@ -5,14 +5,14 @@
   var I  = $("in"), O = $("out"), B = $("btn"), S = $("status");
   var KM = $("key-menu"), KU = $("key-unlock"), KL = $("license"), KS = $("key-status");
   var U  = $("username");
-  var TAB_LOGIN    = $("tab-login");
-  var TAB_REGISTER = $("tab-register");
   var P  = Q.querySelector(".page");
   var DASH = $("dashboard");
 
-  var DB_URL = "https://gist.githubusercontent.com/lolexell/d6c16c6bb4fe536c6fc3f68cd4204fe6/raw/e412e60149f60505c35785bc636de459eabf5046/keys_databaseLOLFUSCATOR.db";
+  var OBF_WIN  = $("obf-window");
+  var OBF_HEAD = $("obf-header");
 
-  var mode = "login";
+  var DB_URL = "https://gist.githubusercontent.com/lolexell/d6c16c6bb4fe536c6fc3f68cd4204fe6/raw/a792e36e5eff6439959bc44a415cce5170c9c02e/keys_databaseLOLFUSCATOR.db";
+
   var __KFLAG = false;
   var currentUser = null;
   var currentKey  = null;
@@ -29,11 +29,11 @@
 
   function normalizeLua(s){
     if(!s) return "";
-    return s.replace(/\r/g,"")
-            .replace(/--\[\[[\s\S]*?\]\]/g,"")
-            .replace(/--[^\n]*/g,"")
-            .replace(/[ \t]+/g," ")
-            .replace(/^\s+|\s+$/gm,"");
+    return s.replace(/\\r/g,"")
+            .replace(/--\\[\\[[\\s\\S]*?\\]\\]/g,"")
+            .replace(/--[^\\n]*/g,"")
+            .replace(/[ \\t]+/g," ")
+            .replace(/^\\s+|\\s+$/gm,"");
   }
 
   function xorJS(str,key){
@@ -74,90 +74,53 @@
     return /^LOLF-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(key.toUpperCase());
   }
 
-  function applyMode(){
-    if(mode==="login"){
-      if(TAB_LOGIN)    TAB_LOGIN.classList.add("key-tab-active");
-      if(TAB_REGISTER) TAB_REGISTER.classList.remove("key-tab-active");
-      if(U) U.style.display = "none";
-      setKeyStatus("waiting for key");
-    }else{
-      if(TAB_REGISTER) TAB_REGISTER.classList.add("key-tab-active");
-      if(TAB_LOGIN)    TAB_LOGIN.classList.remove("key-tab-active");
-      if(U) U.style.display = "block";
-      setKeyStatus("register: contact lolexell for key");
-    }
-  }
-
   function renderDashboard(){
     if(!DASH || !__KFLAG) return;
     var u = currentUser || "anonymous";
     var k = currentKey  || "unknown";
     DASH.innerHTML =
-      "<div class=\"dash-card\">" +
-        "<div class=\"dash-title\">Account dashboard</div>" +
-        "<div class=\"dash-row\"><span>User:</span><code>"+u+"</code></div>" +
-        "<div class=\"dash-row\"><span>Key:</span><code>"+k+"</code></div>" +
-        "<div class=\"dash-row\"><span>Plan:</span><code>lolfuscator 9.0</code></div>" +
-        "<div class=\"dash-row\"><span>Status:</span><code>active</code></div>" +
+      "<div class=\\"dash-card\\">" +
+        "<div class=\\"dash-title\\">Account</div>" +
+        "<div class=\\"dash-row\\"><span>User:</span><code>"+u+"</code></div>" +
+        "<div class=\\"dash-row\\"><span>Key:</span><code>"+k+"</code></div>" +
+        "<div class=\\"dash-row\\"><span>Plan:</span><code>lolfuscator 9.0</code></div>" +
+        "<div class=\\"dash-row\\"><span>Status:</span><code>active</code></div>" +
       "</div>";
   }
 
   async function handleAuth(){
+    var user   = (U  && U.value.trim())  || "";
     var rawKey = (KL && KL.value.trim()) || "";
     var key    = rawKey.toUpperCase();
-    var user   = (U && U.value.trim()) || "";
 
-    if(mode === "login"){
-      if(!key){
-        setKeyStatus("contact lolexell for key");
-        return;
-      }
-      if(!isValidKeyFormat(key)){
-        setKeyStatus("invalid format (LOLF-XXXX-XXXX-XXXX)");
-        return;
-      }
-      setKeyStatus("checking db...");
-      var db = await fetchDbText();
-      if(!db){
-        setKeyStatus("db error");
-        return;
-      }
-      if(!dbHasKey(db, key)){
-        setKeyStatus("key not found");
-        return;
-      }
-      __KFLAG = true;
-      currentKey  = key;
-      currentUser = user || "user";
-      setKeyStatus("login ok");
-    }else{
-      if(!user || !key){
-        setKeyStatus("enter username & key");
-        return;
-      }
-      if(user.length < 3){
-        setKeyStatus("username too short");
-        return;
-      }
-      if(!isValidKeyFormat(key)){
-        setKeyStatus("invalid format (LOLF-XXXX-XXXX-XXXX)");
-        return;
-      }
-      setKeyStatus("checking db...");
-      var db2 = await fetchDbText();
-      if(!db2){
-        setKeyStatus("db error");
-        return;
-      }
-      if(dbHasKey(db2, key)){
-        setKeyStatus("key already exists in db");
-        return;
-      }
-      __KFLAG = true;
-      currentKey  = key;
-      currentUser = user;
-      setKeyStatus("registered (local only)");
+    if(!user || !key){
+      setKeyStatus("enter username & key");
+      return;
     }
+    if(user.length < 3){
+      setKeyStatus("username too short");
+      return;
+    }
+    if(!isValidKeyFormat(key)){
+      setKeyStatus("invalid format (LOLF-XXXX-XXXX-XXXX)");
+      return;
+    }
+
+    setKeyStatus("checking db...");
+    var db = await fetchDbText();
+    if(!db){
+      setKeyStatus("db error");
+      return;
+    }
+    if(!dbHasKey(db, key)){
+      setKeyStatus("invalid key");
+      return;
+    }
+
+    __KFLAG = true;
+    currentUser = user;
+    currentKey  = key;
+    setKeyStatus("login ok");
 
     if(KM) KM.style.display = "none";
     if(P)  P.classList.remove("blurred");
@@ -203,8 +166,8 @@
       function level1(bb){
         function level2(xx){
           var head =
-"--// lolfuscator 9.0 || lolfuscator.net\n"
-+"-- "+contactLine+"\n";
+"--// lolfuscator 9.0 || lolfuscator.net\\n"
++"-- "+contactLine+"\\n";
 
           var body =
 "local __K0=" + T1 + " "
@@ -272,10 +235,10 @@
 
   async function runObfuscate(){
     if(!__KFLAG){
-      if(O) O.value = "-- enter valid key first";
+      if(O) O.value = "-- enter valid username + key first";
       if(KM) KM.style.display = "flex";
       if(P)  P.classList.add("blurred");
-      setKeyStatus(mode==="login" ? "contact lolexell for key" : "enter username & key");
+      setKeyStatus("enter username & key");
       return;
     }
     var v = (I && I.value) || "";
@@ -296,7 +259,6 @@
     }
   }
 
-  // draggable helper
   function makeDraggable(winEl, handleEl){
     if(!winEl || !handleEl) return;
     var offsetX = 0, offsetY = 0, startX = 0, startY = 0;
@@ -327,36 +289,18 @@
   // init
   if(P) P.classList.add("blurred");
   if(KM) KM.style.display = "flex";
-  applyMode();
+  setKeyStatus("enter username & key");
 
   if(KU){
     KU.onclick = function(){ handleAuth(); };
-  }
-
-  if(TAB_LOGIN){
-    TAB_LOGIN.onclick = function(){
-      mode = "login";
-      applyMode();
-    };
-  }
-
-  if(TAB_REGISTER){
-    TAB_REGISTER.onclick = function(){
-      mode = "register";
-      applyMode();
-    };
   }
 
   if(B){
     B.onclick = function(){ runObfuscate(); };
   }
 
-  // draggable key window и обфускатор
-  var KEY_WIN   = Q.querySelector(".key-window");
-  var KEY_HEAD  = Q.querySelector(".key-header");
-  var OBF_WIN   = $("obf-window");
-  var OBF_HEAD  = $("obf-header");
-
+  var KEY_WIN  = Q.querySelector(".key-window");
+  var KEY_HEAD = Q.querySelector(".key-header");
   makeDraggable(KEY_WIN, KEY_HEAD);
   makeDraggable(OBF_WIN, OBF_HEAD);
 })();
