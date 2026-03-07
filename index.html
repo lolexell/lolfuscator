@@ -2,56 +2,48 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>🔥lolfuscator.meow 4.0🔥</title>
+  <title>lolfuscator 4.0</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="bg">
-  <div class="bg-gradient"></div>
-  <div class="bg-grid"></div>
-</div>
+<div class="snow-layer"></div>
 
-<main class="shell">
-  <header class="top">
-    <div class="brand">
-      <span class="brand-main">👑lolfuscator.meow 4.0👑</span>
+<main class="page">
+  <header class="header">
+    <div class="logo">
+      <span class="logo-main">lolfuscator</span><span class="logo-dot">4.0</span>
     </div>
-    <div class="subtitle">Lua obfuscator</div>
+    <div class="subtitle"></div>
   </header>
 
-  <section class="panel">
-    <div class="panel-header">
-      <span class="pill pill-green"></span>
-      <span class="pill pill-yellow"></span>
-      <span class="pill pill-red"></span>
-      <span class="panel-title">script lua</span>
-      <span class="panel-badge">online</span>
+  <section class="card">
+    <div class="card-header">
+      <span class="card-title">script.lua</span>
+      <span class="card-status">online</span>
     </div>
 
-    <div class="panel-body">
-      <div class="col">
-        <div class="label-row">
+    <div class="card-body">
+      <div class="column">
+        <div class="row-label">
           <span class="label">Input</span>
-          <span class="hint">paste your Lua script</span>
+          <span class="hint">your Lua code</span>
         </div>
-        <textarea id="in" spellcheck="false" placeholder="print(&quot;hello, lolfuscator.meow&quot;)"></textarea>
+        <textarea id="in" spellcheck="false" placeholder="print(&quot;hello, lolfuscator 4.0&quot;)"></textarea>
       </div>
 
-      <div class="col col-center">
-        <button id="btn">Obfuscate →</button>
+      <div class="column center">
+        <button id="btn">Obfuscate</button>
         <label class="check">
           <input type="checkbox" id="cmt" checked>
           <span>add lolfuscator header</span>
         </label>
-        <p class="note">
-          Not real security, just for fun.
-        </p>
+        <p class="note">Toy protection only. Use in sandbox.</p>
         <p id="status" class="status">idle</p>
       </div>
 
-      <div class="col">
-        <div class="label-row">
+      <div class="column">
+        <div class="row-label">
           <span class="label">Output</span>
           <span class="hint">obfuscated Lua</span>
         </div>
@@ -59,9 +51,7 @@
       </div>
     </div>
   </section>
-
-
-
+</main>
 
 <script src="obf.js"></script>
 </body>
