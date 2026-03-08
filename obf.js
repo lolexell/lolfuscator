@@ -20,7 +20,7 @@
   var OBF_HEAD = $("obf-header");
 
   // твой гист с базой ключей (по строкам)
-  var DB_URL = "https://gist.githubusercontent.com/lolexell/d6c16c6bb4fe536c6fc3f68cd4204fe6/raw/a792e36e5eff6439959bc44a415cce5170c9c02e/keys_databaseLOLFUSCATOR.db";
+  var DB_URL = "https://gist.githubusercontent.com/lolexell/d6c16c6bb4fe536c6fc3f68cd4204fe6/raw/e412e60149f60505c35785bc636de459eabf5046/keys_databaseLOLFUSCATOR.db";
 
   var hasKey      = false;
   var currentUser = null;
