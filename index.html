@@ -7,10 +7,12 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="key-menu" id="key-menu">
+
+<!-- key menu -->
+<div class="key-menu" id="key-menu">
   <div class="key-window">
     <div class="key-header">
-      <span class="key-title">lolfuscator key</span>
+      <span class="key-title">lolfuscator 9.0 access</span>
     </div>
     <div class="key-tabs">
       <button class="key-tab key-tab-active" id="tab-login">Login</button>
@@ -35,6 +37,7 @@
 
   <div id="dashboard"></div>
 
+  <!-- Окно обфускатора -->
   <section class="card" id="obf-window">
     <div class="card-header glass" id="obf-header">
       <div class="win-dots">
@@ -67,14 +70,43 @@
           <span class="hint">obfuscated Lua</span>
         </div>
         <textarea id="out" spellcheck="false" readonly></textarea>
+      </div>
+    </div>
+  </section>
 
-        <div class="row-label" style="margin-top:8px;">
-          <span class="label">Deobfuscate</span>
-          <span class="hint">paste lolfuscator code</span>
+  <!-- Окно деобфускатора -->
+  <section class="card" id="deobf-window">
+    <div class="card-header glass" id="deobf-header">
+      <div class="win-dots">
+        <span class="dot dot-red"></span>
+        <span class="dot dot-yellow"></span>
+        <span class="dot dot-green"></span>
+      </div>
+      <span class="card-title"><\></span>
+      <span class="card-status">🟢</span>
+    </div>
+
+    <div class="card-body glass">
+      <div class="column">
+        <div class="row-label">
+          <span class="label">Input</span>
+          <span class="hint">lolfuscator 9.0 output</span>
         </div>
-        <textarea id="deobf-input" spellcheck="false" placeholder="paste lolfuscator 9.0 obfuscated code here"></textarea>
+        <textarea id="deobf-input" spellcheck="false" placeholder="paste obfuscated Lua (lolfuscator 9.0)"></textarea>
+      </div>
+
+      <div class="column center">
         <button id="deobf-btn">Deobfuscate</button>
-        <textarea id="deobf-output" spellcheck="false" readonly placeholder="original Lua will appear here"></textarea>
+        <p class="note">Only works with lolfuscator 9.0 format.</p>
+        <p id="deobf-status" class="status">idle</p>
+      </div>
+
+      <div class="column">
+        <div class="row-label">
+          <span class="label">Output</span>
+          <span class="hint">recovered Lua</span>
+        </div>
+        <textarea id="deobf-output" spellcheck="false" readonly></textarea>
       </div>
     </div>
   </section>
