@@ -11,15 +11,15 @@
 <div class="key-menu" id="key-menu">
   <div class="key-window">
     <div class="key-header">
-      <span class="key-title">lolfuscator 9.0 access</span>
+      <span class="key-title">lolfuscator key</span>
     </div>
     <div class="key-tabs">
       <button class="key-tab key-tab-active" id="tab-login">Login</button>
     </div>
     <div class="key-body">
       <p class="key-hint">contact lolexell for key</p>
-      <input id="license" class="key-input" placeholder="key (LOLF-XXXX-XXXX-XXXX)" spellcheck="false">
-      <input id="username" class="key-input" placeholder="username (for register)" spellcheck="false">
+      <input id="username" class="key-input" placeholder="username" spellcheck="false">
+      <input id="license" class="key-input" placeholder="key" spellcheck="false">
       <button id="key-unlock">Continue</button>
       <p id="key-status" class="key-status">waiting for key</p>
     </div>
@@ -31,7 +31,7 @@
     <div class="logo">
       <span class="logo-main">lolfuscator</span><span class="logo-dot">9.0</span>
     </div>
-    <div class="subtitle">Lua triple xor / base64 / VM obfuscator</div>
+    <div class="subtitle">Lua xor / base64 / VM obfuscator</div>
   </header>
 
   <div id="dashboard"></div>
@@ -58,7 +58,7 @@
 
       <div class="column center">
         <button id="btn">Obfuscate</button>
-        <p class="note">Triple xor + VM. Key required (login).</p>
+        <p class="note">Single xor + VM.</p>
         <p id="status" class="status">idle</p>
       </div>
 
@@ -68,6 +68,14 @@
           <span class="hint">obfuscated Lua</span>
         </div>
         <textarea id="out" spellcheck="false" readonly></textarea>
+
+        <div class="row-label" style="margin-top:8px;">
+          <span class="label">Deobfuscate</span>
+          <span class="hint">paste lolfuscator code</span>
+        </div>
+        <textarea id="deobf-input" spellcheck="false" placeholder="paste lolfuscator 9.0 obfuscated code here"></textarea>
+        <button id="deobf-btn">Deobfuscate</button>
+        <textarea id="deobf-output" spellcheck="false" readonly placeholder="original Lua will appear here"></textarea>
       </div>
     </div>
   </section>
