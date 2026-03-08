@@ -2,6 +2,12 @@
   var Q = document;
   function $(id){ return Q.getElementById(id); }
 
+var db = await fetchDbText();
+if(!db){
+  setKeyStatus("db error (fetch failed)");
+  return;
+}
+  
   var I  = $("in"),
       O  = $("out"),
       B  = $("btn"),
@@ -79,14 +85,14 @@
       return "";
     }
   }
+function dbHasKey(dbText, key){
+  if(!dbText || !key) return false;
+  var lines = dbText.split(/\r?\n/).map(function(s){
+    return s.trim().toUpperCase();
+  }).filter(Boolean);
+  return lines.indexOf(key.toUpperCase()) !== -1;
+}
 
-  function dbHasKey(dbText, key){
-    if(!dbText || !key) return false;
-    var lines = dbText.split(/\r?\n/).map(function(s){
-      return s.trim().toUpperCase();
-    }).filter(Boolean);
-    return lines.indexOf(key.toUpperCase()) !== -1;
-  }
 
   function isValidKeyFormat(key){
     return /^LOLF-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(key.toUpperCase());
