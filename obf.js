@@ -26,6 +26,9 @@
   var D_BTN  = $("deobf-btn");
   var D_STAT = $("deobf-status");
 
+  var COPY_OBF   = $("copy-obf");
+  var COPY_DEOBF = $("copy-deobf");
+
   var hasKey      = false;
   var currentUser = null;
   var currentKey  = null;
@@ -37,7 +40,8 @@
   }
 
   function setKeyStatus(text){
-    if(KS) KS.textContent = text;
+    if(!KS) return;
+    KS.textContent = text;
   }
 
   function setDeobfStatus(text, extraClass){
@@ -270,7 +274,22 @@
     }
   }
 
-  // НОРМАЛЬНЫЙ DRAG: movementX/movementY + кламп по вьюпорту
+  function copyTextFrom(el){
+    if(!el) return;
+    var txt = el.value || "";
+    if(!txt) return;
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).catch(function(err){
+        console.error("clipboard error:", err);
+      });
+    }else{
+      el.select();
+      document.execCommand("copy");
+      el.blur();
+    }
+  }
+
+  // нормальный drag: movementX/movementY + кламп по вьюпорту
   function makeDraggable(winEl, handleEl){
     if(!winEl || !handleEl) return;
 
@@ -281,7 +300,6 @@
 
     function clamp(v,min,max){ return Math.min(max,Math.max(min,v)); }
 
-    // вычисляем стартовое положение из CSS (transform -> реальные left/top)
     function initPosition(){
       var rect = winEl.getBoundingClientRect();
       posLeft = rect.left;
@@ -333,7 +351,6 @@
       document.removeEventListener("mouseup", onUp);
     }
 
-    // если ресайзнули окно, не даём карточке улететь
     window.addEventListener("resize", function(){
       setMaxAndClamp();
     });
@@ -347,6 +364,18 @@
   if(KU) KU.onclick = handleAuth;
   if(B)  B.onclick  = runObfuscate;
   if(D_BTN) D_BTN.onclick = runDeobfuscate;
+
+  if(COPY_OBF){
+    COPY_OBF.onclick = function(){
+      copyTextFrom(O);
+    };
+  }
+
+  if(COPY_DEOBF){
+    COPY_DEOBF.onclick = function(){
+      copyTextFrom(D_OUT);
+    };
+  }
 
   var KEY_WIN  = Q.querySelector(".key-window");
   var KEY_HEAD = Q.querySelector(".key-header");
