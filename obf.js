@@ -23,9 +23,6 @@
   var D_OUT = $("deobf-output");
   var D_BTN = $("deobf-btn");
 
-  // ТВОЙ АКТУАЛЬНЫЙ ГИСТ
-  var DB_URL = "https://gist.githubusercontent.com/lolexell/d6c16c6bb4fe536c6fc3f68cd4204fe6/raw/e412e60149f60505c35785bc636de459eabf5046/keys_databaseLOLFUSCATOR.db";
-
   var hasKey      = false;
   var currentUser = null;
   var currentKey  = null;
@@ -77,27 +74,6 @@
     return "{" + res.join(",") + "}";
   }
 
-  async function fetchDbText(){
-    try{
-      var r = await fetch(DB_URL);
-      if(!r.ok) throw new Error("db " + r.status);
-      var txt = await r.text();
-      return txt;
-    }catch(e){
-      console.error("db fetch error:", e);
-      return "";
-    }
-  }
-
-  function dbHasKey(dbText, key){
-    if(!dbText || !key) return false;
-    // один ключ на строку
-    var lines = dbText.split(/\r?\n/).map(function(s){
-      return s.trim().toUpperCase();
-    }).filter(Boolean);
-    return lines.indexOf(key.toUpperCase()) !== -1;
-  }
-
   function isValidKeyFormat(key){
     return /^LOLF-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(key.toUpperCase());
   }
@@ -134,24 +110,12 @@
       return;
     }
 
-    setKeyStatus("checking db...");
-
-    var db = await fetchDbText();
-    if(!db){
-      setKeyStatus("db error (fetch failed)");
-      return;
-    }
-
-    if(!dbHasKey(db, key)){
-      setKeyStatus("invalid key");
-      return;
-    }
-
+    // халявная система: формат ок -> доступ дан
     hasKey      = true;
     currentUser = user;
     currentKey  = key;
 
-    setKeyStatus("login ok");
+    setKeyStatus("login ok (free)");
 
     if(KM) KM.style.display = "none";
     if(P)  P.classList.remove("blurred");
@@ -167,12 +131,12 @@
     var n = clean.length;
     if(n > 255) n = 255;
 
-    bytes[0] = 1;        // op
-    bytes[1] = n;        // len
+    bytes[0] = 1;
+    bytes[1] = n;
     for(var i = 0; i < n; i++){
       bytes[2 + i] = clean.charCodeAt(i);
     }
-    bytes[2 + n] = 0;    // stop
+    bytes[2 + n] = 0;
 
     var raw = String.fromCharCode.apply(null, bytes);
 
@@ -213,8 +177,6 @@
     return luaStub;
   }
 
-  // ---- deobfuscator ----
-
   function extractB64FromStub(code){
     var m = code.match(/__B='([^']+)'/);
     return m && m[1] || null;
@@ -253,9 +215,9 @@
     return outChars.join("");
   }
 
-  async function runObfuscate(){
+  function runObfuscate(){
     if(!hasKey){
-      if(O) O.value = "-- enter valid username + key first";
+      if(O) O.value = "-- enter username + key first";
       if(KM) KM.style.display = "flex";
       if(P)  P.classList.add("blurred");
       setKeyStatus("enter username & key");
