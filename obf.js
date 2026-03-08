@@ -16,11 +16,10 @@
   var P    = Q.querySelector(".page");
   var DASH = $("dashboard");
 
-  var OBF_WIN  = $("obf-window");
-  var OBF_HEAD = $("obf-header");
-
-  var DEOBF_WIN  = $("deobf-window");
-  var DEOBF_HEAD = $("deobf-header");
+  var OBF_WIN   = $("obf-window");
+  var OBF_HEAD  = $("obf-header");
+  var DEOBF_WIN = $("deobf-window");
+  var DEOBF_HEAD= $("deobf-header");
 
   var D_IN   = $("deobf-input");
   var D_OUT  = $("deobf-output");
@@ -120,7 +119,7 @@
       return;
     }
 
-    // free key system: формат ок -> доступ
+    // free key system
     hasKey      = true;
     currentUser = user;
     currentKey  = key;
@@ -276,9 +275,11 @@
     if(!winEl || !handleEl) return;
 
     var shiftX = 0, shiftY = 0;
+    var dragging = false;
 
     handleEl.addEventListener("mousedown", function(e){
       e.preventDefault();
+      dragging = true;
 
       var rect = winEl.getBoundingClientRect();
       shiftX = e.clientX - rect.left;
@@ -293,6 +294,7 @@
     });
 
     function onMove(e){
+      if(!dragging) return;
       e.preventDefault();
 
       var newLeft = e.clientX - shiftX;
@@ -314,6 +316,7 @@
     }
 
     function onUp(){
+      dragging = false;
       document.removeEventListener("mousemove", onMove);
       document.removeEventListener("mouseup", onUp);
     }
@@ -326,9 +329,11 @@
 
   if(KU) KU.onclick = handleAuth;
   if(B)  B.onclick  = runObfuscate;
-
   if(D_BTN) D_BTN.onclick = runDeobfuscate;
 
+  var KEY_WIN  = Q.querySelector(".key-window");
+  var KEY_HEAD = Q.querySelector(".key-header");
+  makeDraggable(KEY_WIN, KEY_HEAD);
   makeDraggable(OBF_WIN, OBF_HEAD);
   makeDraggable(DEOBF_WIN, DEOBF_HEAD);
 })();
