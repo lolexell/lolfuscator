@@ -156,7 +156,6 @@
 
     var luaStub =
 "--// lolfuscator 9.0 || lolfuscator.net\n" +
-"-- " + contactLine + "\n" +
 "local __K=" + TKEY + " " +
 "local function __jt(t)local o={}for i=1,#t do o[i]=string.char(t[i])end return table.concat(o)end " +
 "local _K=__jt(__K) " +
@@ -271,24 +270,42 @@
     }
   }
 
+  // НОРМАЛЬНЫЙ DRAG: movementX/movementY + кламп по вьюпорту
   function makeDraggable(winEl, handleEl){
     if(!winEl || !handleEl) return;
 
-    var shiftX = 0, shiftY = 0;
+    var posLeft = 0;
+    var posTop  = 0;
     var dragging = false;
+    var unit = "px";
+
+    function clamp(v,min,max){ return Math.min(max,Math.max(min,v)); }
+
+    // вычисляем стартовое положение из CSS (transform -> реальные left/top)
+    function initPosition(){
+      var rect = winEl.getBoundingClientRect();
+      posLeft = rect.left;
+      posTop  = rect.top;
+      winEl.style.transform = "none";
+      winEl.style.left = posLeft + unit;
+      winEl.style.top  = posTop  + unit;
+    }
+
+    function setMaxAndClamp(){
+      var maxLeft = window.innerWidth  - winEl.offsetWidth;
+      var maxTop  = window.innerHeight - winEl.offsetHeight;
+      posLeft = clamp(posLeft,0,Math.max(0,maxLeft));
+      posTop  = clamp(posTop ,0,Math.max(0,maxTop));
+      winEl.style.left = posLeft + unit;
+      winEl.style.top  = posTop  + unit;
+    }
+
+    initPosition();
+    setMaxAndClamp();
 
     handleEl.addEventListener("mousedown", function(e){
       e.preventDefault();
       dragging = true;
-
-      var rect = winEl.getBoundingClientRect();
-      shiftX = e.clientX - rect.left;
-      shiftY = e.clientY - rect.top;
-
-      winEl.style.transform = "none";
-      winEl.style.left = rect.left + "px";
-      winEl.style.top  = rect.top  + "px";
-
       document.addEventListener("mousemove", onMove);
       document.addEventListener("mouseup", onUp);
     });
@@ -297,22 +314,17 @@
       if(!dragging) return;
       e.preventDefault();
 
-      var newLeft = e.clientX - shiftX;
-      var newTop  = e.clientY - shiftY;
+      posLeft += e.movementX;
+      posTop  += e.movementY;
 
-      var vpW = window.innerWidth;
-      var vpH = window.innerHeight;
-      var rect = winEl.getBoundingClientRect();
-      var w = rect.width;
-      var h = rect.height;
+      var maxLeft = window.innerWidth  - winEl.offsetWidth;
+      var maxTop  = window.innerHeight - winEl.offsetHeight;
 
-      if(newLeft < 0) newLeft = 0;
-      if(newTop  < 0) newTop  = 0;
-      if(newLeft + w > vpW) newLeft = vpW - w;
-      if(newTop  + h > vpH) newTop = vpH - h;
+      posLeft = clamp(posLeft,0,Math.max(0,maxLeft));
+      posTop  = clamp(posTop ,0,Math.max(0,maxTop));
 
-      winEl.style.left = newLeft + "px";
-      winEl.style.top  = newTop  + "px";
+      winEl.style.left = posLeft + unit;
+      winEl.style.top  = posTop  + unit;
     }
 
     function onUp(){
@@ -320,6 +332,11 @@
       document.removeEventListener("mousemove", onMove);
       document.removeEventListener("mouseup", onUp);
     }
+
+    // если ресайзнули окно, не даём карточке улететь
+    window.addEventListener("resize", function(){
+      setMaxAndClamp();
+    });
   }
 
   // init
