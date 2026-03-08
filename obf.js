@@ -2,12 +2,6 @@
   var Q = document;
   function $(id){ return Q.getElementById(id); }
 
-var db = await fetchDbText();
-if(!db){
-  setKeyStatus("db error (fetch failed)");
-  return;
-}
-  
   var I  = $("in"),
       O  = $("out"),
       B  = $("btn"),
@@ -25,7 +19,11 @@ if(!db){
   var OBF_WIN  = $("obf-window");
   var OBF_HEAD = $("obf-header");
 
-  // твой гист с базой ключей (по строкам)
+  var D_IN  = $("deobf-input");
+  var D_OUT = $("deobf-output");
+  var D_BTN = $("deobf-btn");
+
+  // актуальный гист с базой ключей
   var DB_URL = "https://gist.githubusercontent.com/lolexell/d6c16c6bb4fe536c6fc3f68cd4204fe6/raw/e412e60149f60505c35785bc636de459eabf5046/keys_databaseLOLFUSCATOR.db";
 
   var hasKey      = false;
@@ -63,8 +61,12 @@ if(!db){
     return out.join("");
   }
 
-  function b64(s){
+  function b64encode(s){
     return btoa(s);
+  }
+
+  function b64decode(s){
+    return atob(s);
   }
 
   function toTableLiteral(s){
@@ -85,14 +87,14 @@ if(!db){
       return "";
     }
   }
-function dbHasKey(dbText, key){
-  if(!dbText || !key) return false;
-  var lines = dbText.split(/\r?\n/).map(function(s){
-    return s.trim().toUpperCase();
-  }).filter(Boolean);
-  return lines.indexOf(key.toUpperCase()) !== -1;
-}
 
+  function dbHasKey(dbText, key){
+    if(!dbText || !key) return false;
+    var lines = dbText.split(/\r?\n/).map(function(s){
+      return s.trim().toUpperCase();
+    }).filter(Boolean);
+    return lines.indexOf(key.toUpperCase()) !== -1;
+  }
 
   function isValidKeyFormat(key){
     return /^LOLF-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(key.toUpperCase());
@@ -126,7 +128,7 @@ function dbHasKey(dbText, key){
       return;
     }
     if(!isValidKeyFormat(key)){
-      setKeyStatus("invalid format (LOLF-XXXX-XXXX-XXXX)");
+      setKeyStatus("invalid format");
       return;
     }
 
@@ -173,7 +175,7 @@ function dbHasKey(dbText, key){
     var raw = String.fromCharCode.apply(null, bytes);
 
     var enc = xorJS(raw, KEY);
-    var B64 = b64(enc);
+    var B64 = b64encode(enc);
 
     var TKEY = toTableLiteral(KEY);
 
@@ -206,6 +208,46 @@ function dbHasKey(dbText, key){
 "end ";
 
     return luaStub;
+  }
+
+  // ---- deobfuscator ----
+
+  function extractB64FromStub(code){
+    var m = code.match(/__B='([^']+)'/);
+    return m && m[1] || null;
+  }
+
+  function deobfuscateStub(code){
+    var KEY = "DNchubD6FNiydub97346dbfkjd";
+
+    var b64 = extractB64FromStub(code);
+    if(!b64) return "-- cannot find payload (__B)";
+
+    var enc;
+    try{
+      enc = b64decode(b64);
+    }catch(e){
+      return "-- invalid base64 payload";
+    }
+
+    var raw = xorJS(enc, KEY);
+
+    var bytes = [];
+    for(var i = 0; i < raw.length; i++){
+      bytes.push(raw.charCodeAt(i));
+    }
+    if(bytes.length < 3 || bytes[0] !== 1){
+      return "-- invalid payload header";
+    }
+    var len = bytes[1] || 0;
+    if(2 + len > bytes.length){
+      return "-- invalid length in payload";
+    }
+    var outChars = [];
+    for(var j = 0; j < len; j++){
+      outChars.push(String.fromCharCode(bytes[2 + j]));
+    }
+    return outChars.join("");
   }
 
   async function runObfuscate(){
@@ -271,7 +313,7 @@ function dbHasKey(dbText, key){
       if(newLeft < 0) newLeft = 0;
       if(newTop  < 0) newTop  = 0;
       if(newLeft + w > vpW) newLeft = vpW - w;
-      if(newTop  + h > vpH) newTop  = vpH - h;
+      if(newTop  + h > vpH) newTop = vpH - h;
 
       winEl.style.left = newLeft + "px";
       winEl.style.top  = newTop  + "px";
@@ -290,6 +332,22 @@ function dbHasKey(dbText, key){
 
   if(KU) KU.onclick = handleAuth;
   if(B)  B.onclick  = runObfuscate;
+
+  if(D_BTN && D_IN && D_OUT){
+    D_BTN.onclick = function(){
+      var code = D_IN.value || "";
+      if(!code.trim()){
+        D_OUT.value = "-- nothing to deobfuscate";
+        return;
+      }
+      try{
+        D_OUT.value = deobfuscateStub(code);
+      }catch(e){
+        console.error(e);
+        D_OUT.value = "-- error: " + (e && e.message || e);
+      }
+    };
+  }
 
   var KEY_WIN  = Q.querySelector(".key-window");
   var KEY_HEAD = Q.querySelector(".key-header");
