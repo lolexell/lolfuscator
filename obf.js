@@ -19,9 +19,13 @@
   var OBF_WIN  = $("obf-window");
   var OBF_HEAD = $("obf-header");
 
-  var D_IN  = $("deobf-input");
-  var D_OUT = $("deobf-output");
-  var D_BTN = $("deobf-btn");
+  var DEOBF_WIN  = $("deobf-window");
+  var DEOBF_HEAD = $("deobf-header");
+
+  var D_IN   = $("deobf-input");
+  var D_OUT  = $("deobf-output");
+  var D_BTN  = $("deobf-btn");
+  var D_STAT = $("deobf-status");
 
   var hasKey      = false;
   var currentUser = null;
@@ -35,6 +39,12 @@
 
   function setKeyStatus(text){
     if(KS) KS.textContent = text;
+  }
+
+  function setDeobfStatus(text, extraClass){
+    if(!D_STAT) return;
+    D_STAT.textContent = text;
+    D_STAT.className = "status " + (extraClass || "");
   }
 
   function normalizeLua(src){
@@ -110,7 +120,7 @@
       return;
     }
 
-    // халявная система: формат ок -> доступ дан
+    // free key system: формат ок -> доступ
     hasKey      = true;
     currentUser = user;
     currentKey  = key;
@@ -147,7 +157,7 @@
 
     var luaStub =
 "--// lolfuscator 9.0 || lolfuscator.net\n" +
-
+"-- " + contactLine + "\n" +
 "local __K=" + TKEY + " " +
 "local function __jt(t)local o={}for i=1,#t do o[i]=string.char(t[i])end return table.concat(o)end " +
 "local _K=__jt(__K) " +
@@ -243,6 +253,25 @@
     }
   }
 
+  function runDeobfuscate(){
+    var code = (D_IN && D_IN.value) || "";
+    if(!code.trim()){
+      if(D_OUT) D_OUT.value = "-- nothing to deobfuscate";
+      setDeobfStatus("idle","idle");
+      return;
+    }
+    try{
+      setDeobfStatus("deobfuscating...","working");
+      var out = deobfuscateStub(code);
+      if(D_OUT) D_OUT.value = out;
+      setDeobfStatus("done","ok");
+    }catch(e){
+      console.error(e);
+      if(D_OUT) D_OUT.value = "-- error: " + (e && e.message || e);
+      setDeobfStatus("error","error");
+    }
+  }
+
   function makeDraggable(winEl, handleEl){
     if(!winEl || !handleEl) return;
 
@@ -298,24 +327,8 @@
   if(KU) KU.onclick = handleAuth;
   if(B)  B.onclick  = runObfuscate;
 
-  if(D_BTN && D_IN && D_OUT){
-    D_BTN.onclick = function(){
-      var code = D_IN.value || "";
-      if(!code.trim()){
-        D_OUT.value = "-- nothing to deobfuscate";
-        return;
-      }
-      try{
-        D_OUT.value = deobfuscateStub(code);
-      }catch(e){
-        console.error(e);
-        D_OUT.value = "-- error: " + (e && e.message || e);
-      }
-    };
-  }
+  if(D_BTN) D_BTN.onclick = runDeobfuscate;
 
-  var KEY_WIN  = Q.querySelector(".key-window");
-  var KEY_HEAD = Q.querySelector(".key-header");
-  makeDraggable(KEY_WIN, KEY_HEAD);
   makeDraggable(OBF_WIN, OBF_HEAD);
+  makeDraggable(DEOBF_WIN, DEOBF_HEAD);
 })();
