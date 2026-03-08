@@ -23,7 +23,7 @@
   var D_OUT = $("deobf-output");
   var D_BTN = $("deobf-btn");
 
-  // актуальный гист с базой ключей
+  // ТВОЙ АКТУАЛЬНЫЙ ГИСТ
   var DB_URL = "https://gist.githubusercontent.com/lolexell/d6c16c6bb4fe536c6fc3f68cd4204fe6/raw/e412e60149f60505c35785bc636de459eabf5046/keys_databaseLOLFUSCATOR.db";
 
   var hasKey      = false;
@@ -81,7 +81,8 @@
     try{
       var r = await fetch(DB_URL);
       if(!r.ok) throw new Error("db " + r.status);
-      return await r.text();
+      var txt = await r.text();
+      return txt;
     }catch(e){
       console.error("db fetch error:", e);
       return "";
@@ -90,6 +91,7 @@
 
   function dbHasKey(dbText, key){
     if(!dbText || !key) return false;
+    // один ключ на строку
     var lines = dbText.split(/\r?\n/).map(function(s){
       return s.trim().toUpperCase();
     }).filter(Boolean);
@@ -128,7 +130,7 @@
       return;
     }
     if(!isValidKeyFormat(key)){
-      setKeyStatus("invalid format");
+      setKeyStatus("invalid format (LOLF-XXXX-XXXX-XXXX)");
       return;
     }
 
@@ -181,6 +183,7 @@
 
     var luaStub =
 "--// lolfuscator 9.0 || lolfuscator.net\n" +
+
 "local __K=" + TKEY + " " +
 "local function __jt(t)local o={}for i=1,#t do o[i]=string.char(t[i])end return table.concat(o)end " +
 "local _K=__jt(__K) " +
